@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { motion } from "framer-motion";
+import InfrastructureGraph from "./InfrastructureGraph";
 import {
   ShieldCheck,
   Mail,
@@ -16,8 +17,64 @@ import {
 } from "lucide-react";
 
 import "./App.css";
+function CasesPage() {
+  return (
+    <section className="page-view">
+      <div className="page-header">
+        <span className="section-label">CASE MANAGEMENT</span>
+        <h1>Forensic Cases</h1>
+        <p>Manage and investigate preserved email evidence.</p>
+      </div>
+
+      <div className="case-grid">
+        <div className="case-card">
+          <span className="case-status">ACTIVE</span>
+          <h3>TRX-20260920-FD40E6D7</h3>
+          <p>forensic_test.eml</p>
+          <small>Email Forensic Investigation</small>
+        </div>
+
+        <div className="case-card">
+          <span className="case-status">PRESERVED</span>
+          <h3>Digital Evidence</h3>
+          <p>SHA-256 verified</p>
+          <small>Evidence integrity maintained</small>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReportsPage() {
+  return (
+    <section className="page-view">
+      <div className="page-header">
+        <span className="section-label">FORENSIC REPORTING</span>
+        <h1>Investigation Reports</h1>
+        <p>Review generated forensic intelligence and evidence.</p>
+      </div>
+
+      <div className="report-grid">
+        <div className="report-card">
+          <span>FORENSIC ANALYSIS</span>
+          <h3>Email Threat Investigation</h3>
+          <p>Header, authentication, infrastructure and origin analysis.</p>
+          <button>VIEW REPORT</button>
+        </div>
+
+        <div className="report-card">
+          <span>DIGITAL EVIDENCE</span>
+          <h3>Evidence Integrity Report</h3>
+          <p>SHA-256 evidence fingerprint and preservation information.</p>
+          <button>VIEW REPORT</button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function App() {
+  const [activePage, setActivePage] = useState("dashboard");
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState(null);
@@ -69,6 +126,7 @@ function App() {
 
       setAnalysis(data);
     } catch (err) {
+      console.error(err);
       setError(
         "Could not connect to the forensic backend. Make sure Flask is running."
       );
@@ -86,10 +144,14 @@ function App() {
       <div className="glow glow-one"></div>
       <div className="glow glow-two"></div>
 
-      {/* Navigation */}
+      {/* =====================================================
+          NAVIGATION
+      ===================================================== */}
+
       <nav className="navbar">
 
         <div className="brand">
+
           <div className="brand-icon">
             <ShieldCheck size={22} />
           </div>
@@ -98,14 +160,33 @@ function App() {
             <h2>
               TARVEX<span>26</span>
             </h2>
+
             <p>EMAIL FORENSICS</p>
           </div>
+
         </div>
 
         <div className="nav-links">
-          <a className="active">Dashboard</a>
-          <a>Cases</a>
-          <a>Reports</a>
+          <button
+  className={activePage === "dashboard" ? "active" : ""}
+  onClick={() => setActivePage("dashboard")}
+>
+  Dashboard
+</button>
+
+<button
+  className={activePage === "cases" ? "active" : ""}
+  onClick={() => setActivePage("cases")}
+>
+  Cases
+</button>
+
+<button
+  className={activePage === "reports" ? "active" : ""}
+  onClick={() => setActivePage("reports")}
+>
+  Reports
+</button>
         </div>
 
         <div className="system-status">
@@ -117,7 +198,10 @@ function App() {
 
       <main className="main">
 
-        {/* Hero */}
+        {/* =====================================================
+            HERO
+        ===================================================== */}
+
         <motion.div
           className="hero"
           initial={{ opacity: 0, y: 25 }}
@@ -143,7 +227,10 @@ function App() {
 
         </motion.div>
 
-        {/* Upload */}
+        {/* =====================================================
+            UPLOAD
+        ===================================================== */}
+
         <motion.div
           className="upload-card"
           initial={{ opacity: 0, scale: 0.97 }}
@@ -201,7 +288,10 @@ function App() {
 
         </motion.div>
 
-        {/* Analysis result */}
+        {/* =====================================================
+            ANALYSIS RESULT
+        ===================================================== */}
+
         {analysis && (
           <motion.div
             className="analysis-card"
@@ -209,7 +299,8 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
           >
 
-            {/* Result Header */}
+            {/* RESULT HEADER */}
+
             <div className="analysis-header">
 
               <div>
@@ -226,7 +317,10 @@ function App() {
 
             </div>
 
-            {/* Basic Email Information */}
+            {/* =================================================
+                BASIC EMAIL INFORMATION
+            ================================================= */}
+
             <div className="analysis-grid">
 
               <InfoBox
@@ -261,7 +355,10 @@ function App() {
 
             </div>
 
-            {/* Header Forensics */}
+            {/* =================================================
+                HEADER FORENSICS
+            ================================================= */}
+
             {forensic && (
               <motion.div
                 className="forensics-section"
@@ -271,6 +368,7 @@ function App() {
               >
 
                 <div className="section-heading">
+
                   <div>
                     <span className="result-label">
                       HEADER FORENSICS
@@ -282,9 +380,11 @@ function App() {
                   </div>
 
                   <Fingerprint size={24} />
+
                 </div>
 
-                {/* Authentication */}
+                {/* AUTHENTICATION */}
+
                 <div className="forensics-grid">
 
                   <ForensicBox
@@ -313,7 +413,8 @@ function App() {
 
                 </div>
 
-                {/* IP Addresses */}
+                {/* IP ADDRESSES */}
+
                 <div className="intel-block">
 
                   <div className="intel-title">
@@ -323,11 +424,16 @@ function App() {
 
                   {forensic.ip_addresses?.length > 0 ? (
                     <div className="intel-list">
+
                       {forensic.ip_addresses.map((ip, index) => (
-                        <span className="intel-tag" key={index}>
+                        <span
+                          className="intel-tag"
+                          key={index}
+                        >
                           {ip}
                         </span>
                       ))}
+
                     </div>
                   ) : (
                     <div className="empty-intel">
@@ -337,7 +443,8 @@ function App() {
 
                 </div>
 
-                {/* Domains */}
+                {/* DOMAINS */}
+
                 <div className="intel-block">
 
                   <div className="intel-title">
@@ -347,11 +454,16 @@ function App() {
 
                   {forensic.domains?.length > 0 ? (
                     <div className="intel-list">
+
                       {forensic.domains.map((domain, index) => (
-                        <span className="intel-tag" key={index}>
+                        <span
+                          className="intel-tag"
+                          key={index}
+                        >
                           {domain}
                         </span>
                       ))}
+
                     </div>
                   ) : (
                     <div className="empty-intel">
@@ -361,7 +473,8 @@ function App() {
 
                 </div>
 
-                {/* Authentication Results */}
+                {/* AUTHENTICATION RESULTS */}
+
                 <div className="intel-block">
 
                   <div className="intel-title">
@@ -370,25 +483,32 @@ function App() {
                   </div>
 
                   {forensic.authentication_results?.length > 0 ? (
+
                     forensic.authentication_results.map(
                       (result, index) => (
+
                         <div
                           className="received-item"
                           key={index}
                         >
                           {result}
                         </div>
+
                       )
                     )
+
                   ) : (
+
                     <div className="empty-intel">
                       No Authentication-Results header found.
                     </div>
+
                   )}
 
                 </div>
 
-                {/* Findings */}
+                {/* FORENSIC FINDINGS */}
+
                 <div className="intel-block">
 
                   <div className="intel-title">
@@ -397,19 +517,27 @@ function App() {
                   </div>
 
                   {forensic.findings?.length > 0 ? (
-                    forensic.findings.map((finding, index) => (
-                      <div
-                        className="finding-item"
-                        key={index}
-                      >
-                        <ShieldAlert size={16} />
-                        {finding}
-                      </div>
-                    ))
+
+                    forensic.findings.map(
+                      (finding, index) => (
+
+                        <div
+                          className="finding-item"
+                          key={index}
+                        >
+                          <ShieldAlert size={16} />
+                          {finding}
+                        </div>
+
+                      )
+                    )
+
                   ) : (
+
                     <div className="finding-safe">
                       No basic header anomalies detected.
                     </div>
+
                   )}
 
                 </div>
@@ -417,31 +545,280 @@ function App() {
               </motion.div>
             )}
 
-            {/* Received / Relay Headers */}
+            {/* =================================================
+                ORIGIN INTELLIGENCE
+            ================================================= */}
+
+            <div className="origin-section">
+
+              <div className="section-heading">
+
+                <MapPin size={20} />
+
+                <div>
+                  <span>ORIGIN INTELLIGENCE</span>
+                  <h3>IP & Infrastructure Origin</h3>
+                </div>
+
+              </div>
+
+              {analysis.geoip_intelligence?.results?.length > 0 ? (
+
+                <div className="origin-grid">
+
+                  {analysis.geoip_intelligence.results.map(
+                    (ipInfo, index) => (
+
+                      <div
+                        className="origin-card"
+                        key={index}
+                      >
+
+                        <div className="origin-card-header">
+
+                          <span>IP ADDRESS</span>
+
+                          <strong>
+                            {ipInfo.ip}
+                          </strong>
+
+                        </div>
+
+                        <div className="origin-details">
+
+                          <div>
+                            <span>TYPE</span>
+                            <p>{ipInfo.type}</p>
+                          </div>
+
+                          <div>
+                            <span>IP VERSION</span>
+                            <p>IPv{ipInfo.version}</p>
+                          </div>
+
+                          <div>
+                            <span>COUNTRY</span>
+                            <p>{ipInfo.country}</p>
+                          </div>
+
+                          <div>
+                            <span>CITY</span>
+                            <p>{ipInfo.city}</p>
+                          </div>
+
+                          <div>
+                            <span>ORGANIZATION</span>
+                            <p>{ipInfo.organization}</p>
+                          </div>
+
+                          <div>
+                            <span>ASN</span>
+                            <p>{ipInfo.asn}</p>
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    )
+                  )}
+
+                </div>
+
+              ) : (
+
+                <div className="origin-empty">
+                  No IP intelligence available.
+                </div>
+
+              )}
+
+            </div>
+
+            {/* =================================================
+                RECEIVED / RELAY HEADERS
+            ================================================= */}
+
             <div className="received-section">
 
               <h3>RECEIVED / RELAY HEADERS</h3>
 
               {analysis.received_headers?.length > 0 ? (
-                analysis.received_headers.map((header, index) => (
-                  <div
-                    className="received-item"
-                    key={index}
-                  >
-                    {header}
-                  </div>
-                ))
+
+                analysis.received_headers.map(
+                  (header, index) => (
+
+                    <div
+                      className="received-item"
+                      key={index}
+                    >
+                      {header}
+                    </div>
+
+                  )
+                )
+
               ) : (
+
                 <div className="received-item">
                   No Received headers found.
                 </div>
+
               )}
 
             </div>
 
           </motion.div>
         )}
-                {/* Threat Assessment */}
+        {/* =====================================================
+    DIGITAL EVIDENCE
+===================================================== */}
+
+{analysis?.evidence && (
+  <motion.section
+    className="evidence-section"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+
+    <div className="evidence-top">
+
+      <div>
+        <span className="result-label">
+          DIGITAL EVIDENCE
+        </span>
+
+        <h3>Evidence Preservation</h3>
+
+        <p>
+          Cryptographic verification of the original email evidence.
+        </p>
+      </div>
+
+      <div className="evidence-badge">
+        <ShieldCheck size={17} />
+        VERIFIED
+      </div>
+
+    </div>
+
+
+    <div className="evidence-main">
+
+      {/* EVIDENCE ID */}
+
+      <div className="evidence-item evidence-wide">
+        <span>EVIDENCE ID</span>
+
+        <strong>
+          {analysis.evidence.evidence_id || "N/A"}
+        </strong>
+      </div>
+
+
+      {/* FILE */}
+
+      <div className="evidence-item">
+        <span>FILE</span>
+
+        <strong>
+          {analysis.evidence.filename || "N/A"}
+        </strong>
+      </div>
+
+
+      {/* SIZE */}
+
+      <div className="evidence-item">
+        <span>SIZE</span>
+
+        <strong>
+          {analysis.evidence.file_size
+            ? `${analysis.evidence.file_size} bytes`
+            : "N/A"}
+        </strong>
+      </div>
+
+
+      {/* TYPE */}
+
+      <div className="evidence-item">
+        <span>TYPE</span>
+
+        <strong>
+          {analysis.evidence.evidence_type || "EMAIL"}
+        </strong>
+      </div>
+
+
+      {/* STATUS */}
+
+      <div className="evidence-item">
+        <span>STATUS</span>
+
+        <strong className="evidence-valid">
+          {analysis.evidence.status || "PRESERVED"}
+        </strong>
+      </div>
+
+    </div>
+
+
+    {/* HASH */}
+
+    <div className="evidence-hash">
+
+      <div className="hash-title">
+        <Fingerprint size={16} />
+        <span>SHA-256 EVIDENCE HASH</span>
+      </div>
+
+      <code>
+        {analysis.evidence.sha256 || "Hash unavailable"}
+      </code>
+
+      <p>
+        Digital fingerprint generated from the uploaded email.
+        Used to verify evidence integrity.
+      </p>
+
+    </div>
+
+
+    {/* TIMESTAMP */}
+
+    <div className="evidence-time">
+
+      <span>PRESERVED AT</span>
+
+      <strong>
+        {analysis.evidence.preserved_at
+          ? new Date(
+              analysis.evidence.preserved_at
+            ).toLocaleString()
+          : "N/A"}
+      </strong>
+
+    </div>
+
+  </motion.section>
+)}
+
+
+        {/* =====================================================
+    INFRASTRUCTURE CORRELATION
+===================================================== */}
+
+{analysis?.infrastructure_graph && (
+  <InfrastructureGraph
+    infrastructureGraph={analysis.infrastructure_graph}
+  />
+)}
+        {/* =====================================================
+            THREAT ASSESSMENT
+        ===================================================== */}
+
         {analysis?.threat_analysis && (
           <motion.div
             className="threat-card"
@@ -449,23 +826,31 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
+
             <div className="threat-header">
+
               <div>
+
                 <span className="result-label">
                   THREAT DETECTION
                 </span>
 
-                <h2>Threat Assessment</h2>
+                <h2>
+                  Threat Assessment
+                </h2>
+
               </div>
 
               <div className="threat-risk">
                 {analysis.threat_analysis.risk_level || "UNKNOWN"}
               </div>
+
             </div>
 
             <div className="threat-score-section">
 
               <div className="score-box">
+
                 <span>THREAT SCORE</span>
 
                 <strong>
@@ -473,40 +858,55 @@ function App() {
                 </strong>
 
                 <small>/ 100</small>
+
               </div>
 
               <div className="threat-summary">
+
                 <span>ANALYSIS SUMMARY</span>
 
                 <p>
                   {analysis.threat_analysis.summary ||
                     "No threat summary available."}
                 </p>
+
               </div>
 
             </div>
 
             <div className="indicators-section">
 
-              <h3>DETECTED INDICATORS</h3>
+              <h3>
+                DETECTED INDICATORS
+              </h3>
 
               {analysis.threat_analysis.indicators?.length > 0 ? (
+
                 analysis.threat_analysis.indicators.map(
                   (indicator, index) => (
+
                     <div
                       className="indicator-item"
                       key={index}
                     >
+
                       <span className="indicator-dot"></span>
 
-                      <span>{indicator}</span>
+                      <span>
+                        {indicator}
+                      </span>
+
                     </div>
+
                   )
                 )
+
               ) : (
+
                 <div className="no-indicators">
                   No suspicious indicators detected.
                 </div>
+
               )}
 
             </div>
@@ -514,7 +914,10 @@ function App() {
           </motion.div>
         )}
 
-        {/* Feature cards */}
+        {/* =====================================================
+            FEATURE CARDS
+        ===================================================== */}
+
         <div className="features">
 
           <FeatureCard
@@ -543,12 +946,16 @@ function App() {
 
         </div>
 
+        {/* FOOTER */}
+
         <footer>
+
           <span>TARVEX26</span>
           <span>•</span>
           <span>SIH 26106</span>
           <span>•</span>
           <span>EMAIL FORENSIC INTELLIGENCE</span>
+
         </footer>
 
       </main>
@@ -557,19 +964,30 @@ function App() {
 }
 
 
-/* Basic information box */
+/* =========================================================
+   INFO BOX
+========================================================= */
+
 function InfoBox({ label, value }) {
+
   return (
     <div className="info-box">
+
       <span>{label}</span>
+
       <p>{value}</p>
+
     </div>
   );
 }
 
 
-/* Forensic information box */
+/* =========================================================
+   FORENSIC BOX
+========================================================= */
+
 function ForensicBox({ label, value, icon }) {
+
   const status = String(value).toUpperCase();
 
   const isPass =
@@ -604,8 +1022,16 @@ function ForensicBox({ label, value, icon }) {
 }
 
 
-/* Feature card */
-function FeatureCard({ icon, title, description }) {
+/* =========================================================
+   FEATURE CARD
+========================================================= */
+
+function FeatureCard({
+  icon,
+  title,
+  description
+}) {
+
   return (
     <motion.div
       className="feature-card"
