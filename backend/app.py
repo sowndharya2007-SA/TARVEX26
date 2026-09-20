@@ -4,6 +4,8 @@ from email import policy
 from email.parser import BytesParser
 
 from forensic.header_analyzer import analyze_headers
+from forensic.threat_analyzer import analyze_threat
+from forensic.origin_intelligence import analyze_origin
 
 
 app = Flask(__name__)
@@ -25,19 +27,28 @@ def analyze_email():
 
     email_file = request.files["email"]
 
-    # Read the uploaded email once
+    # Read uploaded email
     email_bytes = email_file.read()
 
-    # Run TARVEX26 forensic header analysis
+    # ---------------------------------------------------------
+    # 1. HEADER FORENSICS
+    # ---------------------------------------------------------
+
     forensic_data = analyze_headers(email_bytes)
 
+    origin_data = analyze_origin(
+    forensic_data.get("ip_addresses", [])
+)
+
     try:
-        # Parse the same email bytes
-        raw_email = email_bytes
+
+        # -----------------------------------------------------
+        # 2. PARSE EMAIL
+        # -----------------------------------------------------
 
         message = BytesParser(
             policy=policy.default
-        ).parsebytes(raw_email)
+        ).parsebytes(email_bytes)
 
         # Basic email headers
         headers = {
@@ -50,10 +61,19 @@ def analyze_email():
             "message_id": message.get("Message-ID")
         }
 
-        # Received / relay headers
-        received_headers = message.get_all("Received", [])
+        # -----------------------------------------------------
+        # 3. RECEIVED / RELAY HEADERS
+        # -----------------------------------------------------
 
-        # Extract email body
+        received_headers = message.get_all(
+            "Received",
+            []
+        )
+
+        # -----------------------------------------------------
+        # 4. EMAIL BODY
+        # -----------------------------------------------------
+
         body = ""
 
         if message.is_multipart():
@@ -61,13 +81,29 @@ def analyze_email():
             for part in message.walk():
 
                 if part.get_content_type() == "text/plain":
+
                     body = part.get_content()
+
                     break
 
         else:
+
             body = message.get_content()
 
-        # Return complete TARVEX26 analysis
+        # -----------------------------------------------------
+        # 5. THREAT ANALYSIS
+        # -----------------------------------------------------
+
+        threat_analysis = analyze_threat(
+            headers,
+            body,
+            forensic_data
+        )
+
+        # -----------------------------------------------------
+        # 6. RETURN COMPLETE ANALYSIS
+        # -----------------------------------------------------
+
         return jsonify({
 
             "status": "success",
@@ -77,14 +113,20 @@ def analyze_email():
             # Basic email information
             "headers": headers,
 
-            # Existing relay information
+            # Relay information
             "received_headers": received_headers,
 
             # Email body
             "body": body,
 
-            # New forensic intelligence
-            "forensics": forensic_data
+            # Header forensic intelligence
+            "forensics": forensic_data,
+
+            # Threat detection intelligence
+            "threat_analysis": threat_analysis,
+
+            "origin_intelligence": origin_data
+
         })
 
     except Exception as e:

@@ -441,6 +441,78 @@ function App() {
 
           </motion.div>
         )}
+                {/* Threat Assessment */}
+        {analysis?.threat_analysis && (
+          <motion.div
+            className="threat-card"
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="threat-header">
+              <div>
+                <span className="result-label">
+                  THREAT DETECTION
+                </span>
+
+                <h2>Threat Assessment</h2>
+              </div>
+
+              <div className="threat-risk">
+                {analysis.threat_analysis.risk_level || "UNKNOWN"}
+              </div>
+            </div>
+
+            <div className="threat-score-section">
+
+              <div className="score-box">
+                <span>THREAT SCORE</span>
+
+                <strong>
+                  {analysis.threat_analysis.threat_score ?? 0}
+                </strong>
+
+                <small>/ 100</small>
+              </div>
+
+              <div className="threat-summary">
+                <span>ANALYSIS SUMMARY</span>
+
+                <p>
+                  {analysis.threat_analysis.summary ||
+                    "No threat summary available."}
+                </p>
+              </div>
+
+            </div>
+
+            <div className="indicators-section">
+
+              <h3>DETECTED INDICATORS</h3>
+
+              {analysis.threat_analysis.indicators?.length > 0 ? (
+                analysis.threat_analysis.indicators.map(
+                  (indicator, index) => (
+                    <div
+                      className="indicator-item"
+                      key={index}
+                    >
+                      <span className="indicator-dot"></span>
+
+                      <span>{indicator}</span>
+                    </div>
+                  )
+                )
+              ) : (
+                <div className="no-indicators">
+                  No suspicious indicators detected.
+                </div>
+              )}
+
+            </div>
+
+          </motion.div>
+        )}
 
         {/* Feature cards */}
         <div className="features">
