@@ -1,0 +1,29 @@
+From: Security Alert <security-alert@secure-example.com>
+To: analyst@example.com
+Subject: Urgent Account Verification Required
+Date: Sat, 19 Sep 2026 18:30:00 +0530
+Reply-To: verify-account@secure-example.net
+Return-Path: <bounce@secure-example.net>
+Message-ID: <alert-20260919-001@secure-example.com>
+Received: from mail.secure-example.com (mail.secure-example.com [203.0.113.45])
+    by mail.example.com with ESMTPS id ABC123
+    for <analyst@example.com>; Sat, 19 Sep 2026 18:29:55 +0530
+Authentication-Results: mail.example.com;
+    spf=fail smtp.mailfrom=secure-example.net;
+    dkim=fail header.d=secure-example.com;
+    dmarc=fail header.from=secure-example.com
+
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+URGENT: Your account requires immediate verification.
+
+Your account may be suspended unless you verify your identity immediately.
+
+Click the verification link below:
+https://secure-example.net/verify
+
+Failure to complete verification within 24 hours may result in account restriction.
+
+Regards,
+Security Team
