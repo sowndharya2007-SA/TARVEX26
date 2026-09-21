@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>
+TARVEX26 Forensic Report
+</title>
+
+<style>
+
+:root {
+    --bg: #03070d;
+    --panel: #07111b;
+    --panel2: #091722;
+    --border: #12384b;
+    --cyan: #00d9ff;
+    --cyan2: #4de8ff;
+    --text: #e8f7fb;
+    --muted: #7893a0;
+    --green: #19e6a2;
+    --yellow: #ffd166;
+    --red: #ff5c7a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(0,217,255,0.08),
+            transparent 35%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    font-family:
+        Inter,
+        Segoe UI,
+        Arial,
+        sans-serif;
+
+    line-height: 1.6;
+}
+
+.container {
+    width: min(1180px, 92%);
+    margin: 0 auto;
+}
+
+.header {
+    padding: 55px 0 35px;
+
+    border-bottom:
+        1px solid var(--border);
+}
+
+.brand {
+    color: var(--cyan);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 4px;
+}
+
+h1 {
+    margin: 8px 0;
+
+    font-size: clamp(34px, 5vw, 60px);
+
+    letter-spacing: -2px;
+}
+
+.subtitle {
+    color: var(--muted);
+    max-width: 760px;
+}
+
+.report-meta {
+    margin-top: 25px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 12px;
+}
+
+.meta {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.meta span {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+}
+
+.meta strong {
+    color: var(--cyan2);
+}
+
+.section {
+    padding: 45px 0;
+
+    border-bottom:
+        1px solid rgba(18,56,75,0.65);
+}
+
+.section-title {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-number {
+    color: var(--cyan);
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.eyebrow {
+    display: block;
+
+    color: var(--cyan);
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    font-weight: 800;
+}
+
+h2 {
+    margin: 2px 0 0;
+
+    font-size: 25px;
+}
+
+.grid {
+    display: grid;
+    gap: 14px;
+}
+
+.grid.two {
+    grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.grid.three {
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.grid.five {
+    grid-template-columns:
+        repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.grid.compact {
+    gap: 10px;
+}
+
+.card,
+.metric,
+.summary,
+.assessment,
+.notice,
+.conclusion {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(7,17,27,0.95),
+            rgba(9,23,34,0.88)
+        );
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 14px;
+
+    padding: 20px;
+}
+
+.card.wide {
+    grid-column: 1 / -1;
+}
+
+.label {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+
+    font-weight: 800;
+
+    margin-bottom: 7px;
+}
+
+.card strong {
+    word-break: break-word;
+}
+
+code {
+    display: block;
+
+    color: var(--cyan2);
+
+    font-family:
+        Consolas,
+        monospace;
+
+    font-size: 12px;
+
+    word-break: break-all;
+}
+
+.status {
+    color: var(--green) !important;
+}
+
+.metric {
+    text-align: center;
+}
+
+.metric span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+}
+
+.metric strong {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 25px;
+
+    color: var(--cyan2);
+}
+
+.metric small {
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.assessment {
+    display: grid;
+
+    grid-template-columns:
+        190px 1fr;
+
+    gap: 25px;
+
+    align-items: center;
+}
+
+.score-box {
+    border-radius: 14px;
+
+    padding: 22px;
+
+    text-align: center;
+
+    border: 1px solid var(--border);
+}
+
+.score-box span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+}
+
+.score-box strong {
+    display: block;
+
+    font-size: 50px;
+}
+
+.score-box small {
+    color: var(--muted);
+}
+
+.score-box.danger {
+    border-color: rgba(255,92,122,0.5);
+}
+
+.score-box.danger strong {
+    color: var(--red);
+}
+
+.score-box.warning {
+    border-color: rgba(255,209,102,0.5);
+}
+
+.score-box.warning strong {
+    color: var(--yellow);
+}
+
+.score-box.safe strong {
+    color: var(--green);
+}
+
+.assessment-info {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(160px, 1fr));
+
+    gap: 18px;
+}
+
+.summary {
+    margin-top: 14px;
+}
+
+.summary p {
+    margin-bottom: 0;
+    color: #c8d9df;
+}
+
+.auth-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 12px;
+}
+
+.auth-grid div {
+    background: rgba(0,0,0,0.18);
+
+    padding: 15px;
+
+    border-radius: 10px;
+}
+
+.auth-grid span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+}
+
+.auth-grid strong {
+    color: var(--cyan2);
+}
+
+ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+}
+
+li {
+    margin: 7px 0;
+    color: #bfd1d8;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.ip-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+}
+
+.ip-header strong {
+    color: var(--cyan2);
+    font-size: 20px;
+}
+
+.badge {
+    border: 1px solid var(--border);
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    color: var(--cyan);
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+}
+
+.timeline {
+    display: grid;
+    gap: 10px;
+}
+
+.timeline-item {
+    display: grid;
+
+    grid-template-columns:
+        70px 1fr auto;
+
+    gap: 12px;
+
+    align-items: center;
+
+    padding: 12px;
+
+    border-left:
+        2px solid var(--cyan);
+
+    background: rgba(0,217,255,0.03);
+}
+
+.timeline-item span {
+    color: var(--cyan);
+    font-size: 11px;
+}
+
+.timeline-item small {
+    color: var(--green);
+}
+
+.conclusion {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(170px, 1fr));
+
+    gap: 20px;
+}
+
+.conclusion strong {
+    color: var(--cyan2);
+    font-size: 20px;
+}
+
+.notice {
+    margin-top: 15px;
+
+    border-color:
+        rgba(255,209,102,0.35);
+}
+
+.notice strong {
+    color: var(--yellow);
+}
+
+.notice p {
+    color: var(--muted);
+    margin-bottom: 0;
+}
+
+.empty {
+    padding: 30px;
+
+    text-align: center;
+
+    border:
+        1px dashed var(--border);
+
+    border-radius: 12px;
+
+    color: var(--muted);
+}
+
+.footer {
+    padding: 40px 0 70px;
+
+    text-align: center;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    letter-spacing: 2px;
+}
+
+@media (max-width: 700px) {
+
+    .assessment {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline-item {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media print {
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .header,
+    .section {
+        break-inside: avoid;
+    }
+
+    .card,
+    .metric,
+    .summary,
+    .assessment,
+    .notice,
+    .conclusion {
+        background: white;
+        border-color: #ccc;
+        color: black;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+
+    <div class="brand">
+        TARVEX26 • SIH26106
+    </div>
+
+    <h1>
+        Digital Email Forensic Report
+    </h1>
+
+    <p class="subtitle">
+        AI-Powered Email Threat Detection,
+        GeoLocation and Forensic Intelligence Platform
+    </p>
+
+    <div class="report-meta">
+
+        <div class="meta">
+            <span>EVIDENCE FILE</span>
+            <strong>forensic_test.eml</strong>
+        </div>
+
+        <div class="meta">
+            <span>GENERATED</span>
+            <strong>22 Sep 2026, 12:01:24 AM</strong>
+        </div>
+
+        <div class="meta">
+            <span>RISK LEVEL</span>
+            <strong>HIGH</strong>
+        </div>
+
+        <div class="meta">
+            <span>ENGINE</span>
+            <strong>TARVEX26</strong>
+        </div>
+
+    </div>
+
+</header>
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">01</span>
+            <div>
+                <span class="eyebrow">CASE IDENTIFICATION</span>
+                <h2>Evidence & Case Information</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            <div class="card">
+                <span class="label">CASE ID</span>
+                <strong>N/A</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">EVIDENCE ID</span>
+                <strong>TRX-TEST-001</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">SOURCE FILE</span>
+                <strong>forensic_test.eml</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">FILE SIZE</span>
+                <strong>1747 bytes</strong>
+            </div>
+
+            <div class="card wide">
+                <span class="label">SHA-256 EVIDENCE HASH</span>
+                <code>TEST_SHA256_HASH</code>
+            </div>
+
+            <div class="card">
+                <span class="label">EVIDENCE STATUS</span>
+                <strong class="status">PRESERVED</strong>
+            </div>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">02</span>
+            <div>
+                <span class="eyebrow">EXECUTIVE ASSESSMENT</span>
+                <h2>Threat Assessment</h2>
+            </div>
+        </div>
+
+        <div class="assessment">
+            <div class="score-box danger">
+                <span>THREAT SCORE</span>
+                <strong>83</strong>
+                <small>/ 100</small>
+            </div>
+
+            <div class="assessment-info">
+                <div>
+                    <span class="label">CLASSIFICATION</span>
+                    <strong>SUSPICIOUS</strong>
+                </div>
+
+                <div>
+                    <span class="label">RISK LEVEL</span>
+                    <strong>HIGH</strong>
+                </div>
+
+                <div>
+                    <span class="label">CONFIDENCE</span>
+                    <strong>HIGH</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <span class="label">AUTOMATED SUMMARY</span>
+            <p>Suspicious email indicators detected.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">03</span>
+            <div>
+                <span class="eyebrow">AI THREAT DETECTION</span>
+                <h2>Threat Indicators</h2>
+            </div>
+        </div>
+
+        <div class="grid three">
+            <div class="metric">
+                <span>PHISHING RISK</span>
+                <strong>HIGH</strong>
+            </div>
+
+            <div class="metric">
+                <span>BEC RISK</span>
+                <strong>MEDIUM</strong>
+            </div>
+
+            <div class="metric">
+                <span>SPOOFING RISK</span>
+                <strong>HIGH</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">DETECTED INDICATORS</span>
+            <ul><li>Urgency language</li><li>Credential verification request</li><li>Suspicious URL</li></ul>
+        </div>
+
+        <div class="card">
+            <span class="label">CATEGORY SCORES</span>
+            <ul><li>phishing: 80</li><li>bec: 60</li><li>spoofing: 75</li></ul>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">04</span>
+            <div>
+                <span class="eyebrow">HEADER FORENSICS</span>
+                <h2>Email Header & Protocol Analysis</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            <div class="card">
+                <span class="label">FROM</span>
+                <strong>attacker@example.com</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">RETURN-PATH</span>
+                <strong>bounce@example.com</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">REPLY-TO</span>
+                <strong>reply@example.net</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">MESSAGE-ID</span>
+                <strong>&lt;test@example.com&gt;</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">AUTHENTICATION RESULTS</span>
+
+            <div class="auth-grid">
+                <div>
+                    <span>SPF</span>
+                    <strong>NOT PRESENT</strong>
+                </div>
+
+                <div>
+                    <span>DKIM</span>
+                    <strong>NOT PRESENT</strong>
+                </div>
+
+                <div>
+                    <span>DMARC</span>
+                    <strong>NOT PRESENT</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">EXTRACTED IP ADDRESSES</span>
+            <ul><li>203.0.113.25</li></ul>
+        </div>
+
+        <div class="card">
+            <span class="label">EXTRACTED DOMAINS</span>
+            <ul><li>example.com</li></ul>
+        </div>
+
+        <div class="card">
+            <span class="label">RECEIVED / RELAY HEADERS</span>
+            <p class='muted'>No Received headers available.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">05</span>
+            <div>
+                <span class="eyebrow">IP INTELLIGENCE</span>
+                <h2>Infrastructure & Reputation Analysis</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            
+        <div class="empty">
+            No IP intelligence results were available.
+        </div>
+        
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">06</span>
+            <div>
+                <span class="eyebrow">ORIGIN TRACEABILITY</span>
+                <h2>Geolocation Intelligence</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            
+        <div class="empty">
+            No GeoIP intelligence results were available.
+        </div>
+        
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">07</span>
+            <div>
+                <span class="eyebrow">NETWORK ATTRIBUTION</span>
+                <h2>Anonymization & Infrastructure Indicators</h2>
+            </div>
+        </div>
+
+        <div class="grid five">
+            
+        <div class="metric">
+            <span>TOR</span>
+            <strong>0</strong>
+            <small>DETECTED</small>
+        </div>
+        
+        <div class="metric">
+            <span>VPN</span>
+            <strong>0</strong>
+            <small>DETECTED</small>
+        </div>
+        
+        <div class="metric">
+            <span>PROXY</span>
+            <strong>0</strong>
+            <small>DETECTED</small>
+        </div>
+        
+        <div class="metric">
+            <span>HOSTING</span>
+            <strong>0</strong>
+            <small>DETECTED</small>
+        </div>
+        
+        <div class="metric">
+            <span>CLOUD</span>
+            <strong>0</strong>
+            <small>DETECTED</small>
+        </div>
+        
+        </div>
+
+        <div class="card">
+            <span class="label">NETWORK FINDINGS</span>
+            <p class='muted'>No findings available.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">08</span>
+            <div>
+                <span class="eyebrow">DOMAIN INTELLIGENCE</span>
+                <h2>DNS, Registration & Infrastructure</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            <div class="card">
+                <span class="label">REGISTRATION</span>
+                <p class='muted'>No findings available.</p>
+            </div>
+
+            <div class="card">
+                <span class="label">INFRASTRUCTURE</span>
+                <p class='muted'>No findings available.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">DOMAIN FINDINGS</span>
+            <p class='muted'>No findings available.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">09</span>
+            <div>
+                <span class="eyebrow">LINK FORENSICS</span>
+                <h2>URL Intelligence</h2>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">ANALYZED URLS</span>
+            <p class='muted'>No URLs were detected.</p>
+        </div>
+
+        <div class="card">
+            <span class="label">URL FINDINGS</span>
+            <p class='muted'>No findings available.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">10</span>
+            <div>
+                <span class="eyebrow">MALWARE DELIVERY ANALYSIS</span>
+                <h2>Attachment Intelligence</h2>
+            </div>
+        </div>
+
+        <div class="metric">
+            <span>ATTACHMENT RISK</span>
+            <strong>NONE</strong>
+        </div>
+
+        <div class="grid two">
+            
+        <div class="empty">
+            No attachments detected.
+        </div>
+        
+        </div>
+
+        <div class="card">
+            <span class="label">ATTACHMENT FINDINGS</span>
+            <p class='muted'>No findings available.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">11</span>
+            <div>
+                <span class="eyebrow">IDENTITY CORRELATION</span>
+                <h2>Threat & Infrastructure Correlation</h2>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">CORRELATION RESULTS</span>
+            <p class='muted'>No findings available.</p>
+        </div>
+
+        <div class="card">
+            <span class="label">CORRELATION FINDINGS</span>
+            <p class='muted'>No findings available.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">12</span>
+            <div>
+                <span class="eyebrow">GRAPH FORENSICS</span>
+                <h2>Infrastructure Correlation Graph</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            <div class="metric">
+                <span>NODES</span>
+                <strong>0</strong>
+            </div>
+
+            <div class="metric">
+                <span>RELATIONSHIPS</span>
+                <strong>0</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">RELATIONSHIPS</span>
+            <p class='muted'>No infrastructure relationships detected.</p>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <div class="section-title">
+            <span class="section-number">13</span>
+            <div>
+                <span class="eyebrow">DIGITAL EVIDENCE</span>
+                <h2>Evidence Preservation</h2>
+            </div>
+        </div>
+
+        <div class="grid two">
+            <div class="card">
+                <span class="label">EVIDENCE STATUS</span>
+                <strong>PRESERVED</strong>
+            </div>
+
+            <div class="card">
+                <span class="label">INTEGRITY</span>
+                <strong class="status">VERIFIED</strong>
+            </div>
+
+            <div class="card wide">
+                <span class="label">SHA-256</span>
+                <code>TEST_SHA256_HASH</code>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="label">CHAIN OF CUSTODY</span>
+
+            <div class="timeline">
+                
+            </div>
+        </div>
+    </section>
+    
+
+
+    <section class="section final-section">
+        <div class="section-title">
+            <span class="section-number">14</span>
+            <div>
+                <span class="eyebrow">FORENSIC ASSESSMENT</span>
+                <h2>Investigation Summary</h2>
+            </div>
+        </div>
+
+        <div class="conclusion">
+            <div>
+                <span class="label">CLASSIFICATION</span>
+                <strong>SUSPICIOUS</strong>
+            </div>
+
+            <div>
+                <span class="label">RISK</span>
+                <strong>HIGH</strong>
+            </div>
+
+            <div>
+                <span class="label">CONFIDENCE</span>
+                <strong>HIGH</strong>
+            </div>
+        </div>
+
+        <div class="notice">
+            <strong>FORENSIC LIMITATION</strong>
+
+            <p>
+                TARVEX26 provides evidence-based technical intelligence
+                including header analysis, infrastructure correlation,
+                IP intelligence, geolocation and threat indicators.
+                Results represent investigative intelligence and should
+                not be interpreted as definitive proof of an individual's
+                identity without independent corroborating evidence.
+            </p>
+        </div>
+    </section>
+    
+
+<footer class="footer">
+
+    TARVEX26 • SIH26106 • EMAIL FORENSIC INTELLIGENCE
+
+    <br><br>
+
+    Generated for authorized cybersecurity investigation.
+
+</footer>
+
+</div>
+
+</body>
+
+</html>

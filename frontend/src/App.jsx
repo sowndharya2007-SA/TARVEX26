@@ -18,6 +18,9 @@ import {
   Database,
   Hash,
   Server,
+  Download,
+  ExternalLink,
+  LoaderCircle,
 } from "lucide-react";
 
 import "./App.css";
@@ -45,6 +48,7 @@ function CasesPage({ analysis, onOpenInvestigation }) {
         </p>
       </div>
 
+
       {analysis?.evidence ? (
 
         <div className="case-grid">
@@ -59,11 +63,13 @@ function CasesPage({ analysis, onOpenInvestigation }) {
           >
 
             <div className="case-card-top">
+
               <span className="case-status">
                 ACTIVE
               </span>
 
               <ShieldCheck size={20} />
+
             </div>
 
             <h3>
@@ -92,11 +98,13 @@ function CasesPage({ analysis, onOpenInvestigation }) {
           >
 
             <div className="case-card-top">
+
               <span className="case-status">
                 PRESERVED
               </span>
 
               <Fingerprint size={20} />
+
             </div>
 
             <h3>
@@ -143,202 +151,412 @@ function CasesPage({ analysis, onOpenInvestigation }) {
    REPORTS PAGE
 ========================================================= */
 
-function ReportsPage({ analysis, onOpenSection }) {
+function ReportsPage({
+  analysis,
+  onOpenSection,
+  onGenerateReport,
+  reportLoading,
+  reportData,
+  reportError,
+  onOpenReport,
+  onDownloadReport,
+}) {
   return (
     <section className="page-view">
 
       <div className="page-header">
+        <span className="section-label">FORENSIC REPORTING</span>
 
-        <span className="section-label">
-          FORENSIC REPORTING
-        </span>
-
-        <h1>
-          Investigation Reports
-        </h1>
+        <h1>Investigation Reports</h1>
 
         <p>
           Review generated forensic intelligence and evidence.
         </p>
-
       </div>
 
-
       {analysis ? (
-
-        <div className="report-grid">
-
-          <motion.div
-            className="report-card"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -5 }}
-            onClick={() => onOpenSection("overview")}
-            style={{ cursor: "pointer" }}
-          >
-
-            <span>
-              FORENSIC ANALYSIS
-            </span>
-
-            <h3>
-              Email Threat Investigation
-            </h3>
-
-            <p>
-              Header, authentication, infrastructure,
-              origin and threat analysis.
-            </p>
-
-            <div className="report-meta">
-
-              <FileText size={16} />
-
-              <span>
-                {analysis.filename || "Email evidence"}
-              </span>
-
-            </div>
-
-          </motion.div>
-
+        <>
 
           <motion.div
-            className="report-card"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            whileHover={{ y: -5 }}
-            onClick={() => onOpenSection("evidence")}
-            style={{ cursor: "pointer" }}
-          >
-
-            <span>
-              DIGITAL EVIDENCE
-            </span>
-
-            <h3>
-              Evidence Integrity Report
-            </h3>
-
-            <p>
-              SHA-256 evidence fingerprint and
-              preservation information.
-            </p>
-
-            <div className="report-meta">
-
-              <Hash size={16} />
-
-              <span>
-                {analysis.evidence?.sha256
-                  ? "SHA-256 VERIFIED"
-                  : "HASH UNAVAILABLE"}
-              </span>
-
-            </div>
-
-          </motion.div>
-
-
-          <motion.div
             className="report-card"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            whileHover={{ y: -5 }}
-            onClick={() => onOpenSection("threat")}
-            style={{ cursor: "pointer" }}
+            style={{
+              marginBottom: "18px",
+              cursor: "default",
+              border: "1px solid rgba(0, 220, 255, 0.18)",
+              background: "rgba(0, 20, 35, 0.58)",
+            }}
           >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "18px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ flex: "1 1 420px" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "10px",
+                    letterSpacing: "1.8px",
+                    opacity: 0.55,
+                    marginBottom: "7px",
+                  }}
+                >
+                  STRUCTURED FORENSIC REPORT
+                </span>
 
-            <span>
-              THREAT INTELLIGENCE
-            </span>
+                <h3 style={{ marginBottom: "8px" }}>
+                  Generate Investigation Report
+                </h3>
 
-            <h3>
-              Threat Assessment
-            </h3>
+                <p style={{ marginBottom: "0" }}>
+                  Compile the current TARVEX26 analysis into a structured
+                  forensic HTML report containing threat assessment,
+                  header intelligence, origin analysis, infrastructure,
+                  evidence integrity and chain-of-custody information.
+                </p>
+              </div>
 
-            <p>
-              Risk classification and detected
-              suspicious indicators.
-            </p>
-
-            <div className="report-meta">
-
-              <ShieldAlert size={16} />
-
-              <span>
-                {analysis.threat_analysis?.risk_level ||
-                  "UNKNOWN"}
-              </span>
-
+              <button
+                onClick={onGenerateReport}
+                disabled={reportLoading}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "9px",
+                  minWidth: "220px",
+                  padding: "13px 18px",
+                  borderRadius: "10px",
+                  border: "1px solid rgba(0, 220, 255, 0.35)",
+                  background: reportLoading
+                    ? "rgba(0, 220, 255, 0.08)"
+                    : "rgba(0, 220, 255, 0.12)",
+                  color: "inherit",
+                  cursor: reportLoading ? "wait" : "pointer",
+                  fontWeight: 700,
+                  letterSpacing: "0.8px",
+                }}
+              >
+                {reportLoading ? (
+                  <>
+                    <LoaderCircle size={17} className="spin" />
+                    GENERATING...
+                  </>
+                ) : (
+                  <>
+                    <FileText size={17} />
+                    GENERATE REPORT
+                  </>
+                )}
+              </button>
             </div>
 
+            {reportError && (
+              <div
+                style={{
+                  marginTop: "15px",
+                  padding: "11px 13px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(255, 92, 122, 0.22)",
+                  background: "rgba(255, 92, 122, 0.06)",
+                  fontSize: "12px",
+                  lineHeight: 1.5,
+                }}
+              >
+                {reportError}
+              </div>
+            )}
+
+            {reportData && (
+              <div
+                style={{
+                  marginTop: "17px",
+                  paddingTop: "16px",
+                  borderTop: "1px solid rgba(255,255,255,0.07)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "9px",
+                        letterSpacing: "1.5px",
+                        opacity: 0.5,
+                        marginBottom: "5px",
+                      }}
+                    >
+                      REPORT READY
+                    </span>
+
+                    <strong
+                      style={{
+                        display: "block",
+                        wordBreak: "break-word",
+                        fontSize: "12px",
+                      }}
+                    >
+                      {reportData.filename || "TARVEX26_Forensic_Report.html"}
+                    </strong>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      onClick={onOpenReport}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "7px",
+                        padding: "9px 13px",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(0, 220, 255, 0.22)",
+                        background: "rgba(0, 220, 255, 0.07)",
+                        color: "inherit",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <ExternalLink size={15} />
+                      OPEN REPORT
+                    </button>
+
+                    <button
+                      onClick={onDownloadReport}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "7px",
+                        padding: "9px 13px",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        background: "rgba(255,255,255,0.035)",
+                        color: "inherit",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Download size={15} />
+                      DOWNLOAD
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
 
+          <div className="report-grid">
 
-          <motion.div
-            className="report-card"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            whileHover={{ y: -5 }}
-            onClick={() => onOpenSection("origin")}
-            style={{ cursor: "pointer" }}
-          >
+            <motion.div
+              className="report-card"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -5 }}
+              onClick={() => onOpenSection("overview")}
+              style={{ cursor: "pointer" }}
+            >
+              <span>FORENSIC ANALYSIS</span>
 
-            <span>
-              ORIGIN INTELLIGENCE
-            </span>
+              <h3>Email Threat Investigation</h3>
 
-            <h3>
-              Origin Investigation
-            </h3>
+              <p>
+                Header, authentication, infrastructure,
+                origin and threat analysis.
+              </p>
 
-            <p>
-              Candidate origin IP, geolocation,
-              ISP, ASN and infrastructure analysis.
-            </p>
+              <div className="report-meta">
+                <FileText size={16} />
+                <span>
+                  {analysis.filename ||
+                    analysis.evidence?.filename ||
+                    "Email evidence"}
+                </span>
+              </div>
+            </motion.div>
 
-            <div className="report-meta">
+            <motion.div
+              className="report-card"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ y: -5 }}
+              onClick={() => onOpenSection("evidence")}
+              style={{ cursor: "pointer" }}
+            >
+              <span>DIGITAL EVIDENCE</span>
 
-              <Globe size={16} />
+              <h3>Evidence Integrity Report</h3>
 
-              <span>
-                {analysis.origin_intelligence?.origin?.ip ||
-                  "ORIGIN UNKNOWN"}
-              </span>
+              <p>
+                SHA-256 evidence fingerprint and
+                preservation information.
+              </p>
 
-            </div>
+              <div className="report-meta">
+                <Hash size={16} />
+                <span>
+                  {analysis.evidence?.sha256
+                    ? "SHA-256 VERIFIED"
+                    : "HASH UNAVAILABLE"}
+                </span>
+              </div>
+            </motion.div>
 
-          </motion.div>
+            <motion.div
+              className="report-card"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ y: -5 }}
+              onClick={() => onOpenSection("threat")}
+              style={{ cursor: "pointer" }}
+            >
+              <span>THREAT INTELLIGENCE</span>
 
-        </div>
+              <h3>Threat Assessment</h3>
 
+              <p>
+                Risk classification and detected
+                suspicious indicators.
+              </p>
+
+              <div className="report-meta">
+                <ShieldAlert size={16} />
+                <span>
+                  {analysis.threat_analysis?.risk_level ||
+                    "UNKNOWN"}
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="report-card"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ y: -5 }}
+              onClick={() => onOpenSection("infrastructure")}
+              style={{ cursor: "pointer" }}
+            >
+              <span>INFRASTRUCTURE</span>
+
+              <h3>Correlation Intelligence</h3>
+
+              <p>
+                Relationship graph connecting domains,
+                IP addresses and relay infrastructure.
+              </p>
+
+              <div className="report-meta">
+                <Network size={16} />
+                <span>
+                  {analysis.infrastructure_graph?.node_count ??
+                    analysis.infrastructure_graph?.nodes?.length ??
+                    0}{" "}
+                  NODES
+                </span>
+              </div>
+            </motion.div>
+
+          </div>
+
+          {reportData?.report && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="report-card"
+              style={{
+                marginTop: "18px",
+                cursor: "default",
+                padding: "0",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "17px 18px",
+                  borderBottom: "1px solid rgba(255,255,255,0.07)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "9px",
+                      letterSpacing: "1.5px",
+                      opacity: 0.5,
+                      marginBottom: "5px",
+                    }}
+                  >
+                    LIVE REPORT PREVIEW
+                  </span>
+
+                  <strong>TARVEX26 FORENSIC REPORT</strong>
+                </div>
+
+                <span
+                  style={{
+                    fontSize: "9px",
+                    letterSpacing: "1px",
+                    opacity: 0.55,
+                  }}
+                >
+                  HTML FORENSIC DOCUMENT
+                </span>
+              </div>
+
+              <iframe
+                title="TARVEX26 Forensic Report Preview"
+                srcDoc={reportData.report}
+                style={{
+                  width: "100%",
+                  minHeight: "620px",
+                  border: "0",
+                  background: "#03070d",
+                }}
+              />
+            </motion.div>
+          )}
+
+        </>
       ) : (
-
         <div className="empty-page-state">
-
           <FileText size={42} />
 
-          <h2>
-            No reports available
-          </h2>
+          <h2>No reports available</h2>
 
           <p>
             Analyze an email from the Dashboard
             to generate forensic reports.
           </p>
-
         </div>
-
       )}
 
     </section>
   );
 }
-
 
 /* =========================================================
    MAIN APP
@@ -348,7 +566,14 @@ function App() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
+  const [analysis, setAnalysis] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tarvex26_analysis");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [error, setError] = useState("");
 
   const [activePage, setActivePage] = useState("dashboard");
@@ -357,6 +582,11 @@ function App() {
     activeAnalysisSection,
     setActiveAnalysisSection
   ] = useState("overview");
+
+
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportData, setReportData] = useState(null);
+  const [reportError, setReportError] = useState("");
 
 
   /* =======================================================
@@ -384,7 +614,14 @@ function App() {
 
     setSelectedFile(file);
     setAnalysis(null);
+    try {
+      localStorage.removeItem("tarvex26_analysis");
+    } catch {}
     setError("");
+    setReportData(null);
+    setReportError("");
+    setReportLoading(false);
+
     setActiveAnalysisSection("overview");
   };
 
@@ -407,6 +644,8 @@ function App() {
     setLoading(true);
     setError("");
     setAnalysis(null);
+    setReportData(null);
+    setReportError("");
 
     const formData = new FormData();
 
@@ -437,6 +676,12 @@ function App() {
 
       setAnalysis(data);
 
+      try {
+        localStorage.setItem("tarvex26_analysis", JSON.stringify(data));
+      } catch (storageError) {
+        console.warn("TARVEX26 analysis could not be persisted:", storageError);
+      }
+
       setActivePage("dashboard");
       setActiveAnalysisSection("overview");
 
@@ -458,10 +703,142 @@ function App() {
 
 
   /* =======================================================
+     FORENSIC REPORT GENERATION
+  ======================================================= */
+
+  const generateReport = async () => {
+
+    if (!analysis) {
+      setReportError("Analyze an email before generating a report.");
+      return;
+    }
+
+    setReportLoading(true);
+    setReportError("");
+
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:5000/generate-report",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(analysis),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          "Forensic report generation failed."
+        );
+      }
+
+      if (!data.report) {
+        throw new Error(
+          "The backend returned no report content."
+        );
+      }
+
+      setReportData({
+        filename:
+          data.filename ||
+          "TARVEX26_Forensic_Report.html",
+        report: data.report,
+      });
+
+      setActivePage("reports");
+
+    } catch (err) {
+
+      console.error(err);
+
+      setReportData(null);
+
+      setReportError(
+        err?.message ||
+        "Could not generate the forensic report. Make sure Flask is running."
+      );
+
+    } finally {
+
+      setReportLoading(false);
+
+    }
+  };
+
+
+  const openGeneratedReport = () => {
+
+    if (!reportData?.report) {
+      return;
+    }
+
+    const reportBlob = new Blob(
+      [reportData.report],
+      { type: "text/html;charset=utf-8" }
+    );
+
+    const reportUrl = URL.createObjectURL(reportBlob);
+
+    window.open(
+      reportUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+    window.setTimeout(() => {
+      URL.revokeObjectURL(reportUrl);
+    }, 60000);
+  };
+
+
+  const downloadGeneratedReport = () => {
+
+    if (!reportData?.report) {
+      return;
+    }
+
+    const reportBlob = new Blob(
+      [reportData.report],
+      { type: "text/html;charset=utf-8" }
+    );
+
+    const reportUrl = URL.createObjectURL(reportBlob);
+
+    const link = document.createElement("a");
+
+    link.href = reportUrl;
+
+    link.download =
+      reportData.filename ||
+      "TARVEX26_Forensic_Report.html";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.setTimeout(() => {
+      URL.revokeObjectURL(reportUrl);
+    }, 1000);
+  };
+
+
+  /* =======================================================
      NAVIGATION HELPERS
   ======================================================= */
 
   const openInvestigation = (section = "overview") => {
+
+    if (!analysis) {
+      setActivePage("dashboard");
+      setActiveAnalysisSection("overview");
+      return;
+    }
 
     setActivePage("dashboard");
     setActiveAnalysisSection(section);
@@ -473,21 +850,143 @@ function App() {
   };
 
 
+  const forensic = analysis?.forensics || {};
+
   /* =======================================================
-     FORENSIC DATA
+     ROBUST IP EXTRACTION
+
+     The backend may return IP intelligence as:
+     - forensics.ip_addresses
+     - ip_intelligence.results
+     - ip_intelligence.ip_addresses
+     - ip_intelligence.ips
+     - ip_intelligence.items
+     - geoip_intelligence.results
+
+     We normalize all of those shapes here so the UI does not
+     silently show an empty box just because the response shape
+     changed. No IP is invented.
   ======================================================= */
 
-  const forensic = analysis?.forensics;
+  const isIPv4 = (value) => {
+    if (typeof value !== "string") return false;
 
-  const ipIntelligence =
-    analysis?.ip_intelligence;
+    const ip = value.trim();
+    const parts = ip.split(".");
 
-  const originIntelligence =
-    analysis?.origin_intelligence ||
-    analysis?.geoip_intelligence;
+    return (
+      parts.length === 4 &&
+      parts.every((part) => {
+        if (!/^\d+$/.test(part)) return false;
+        const number = Number(part);
+        return number >= 0 && number <= 255;
+      })
+    );
+  };
 
-  const candidateOrigin =
-    originIntelligence?.origin;
+  const isIPv6 = (value) => {
+    if (typeof value !== "string") return false;
+
+    const ip = value.trim();
+
+    // A real IPv6 address must contain at least two colons.
+    // URL parsing gives us a much stricter validation than a
+    // loose colon/hex regex, preventing timestamps such as
+    // 09:30:00 from being displayed as IPv6 addresses.
+    if ((ip.match(/:/g) || []).length < 2) return false;
+    if (!/^[0-9a-fA-F:]+$/.test(ip)) return false;
+
+    try {
+      new URL(`http://[${ip}]/`);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const isIP = (value) =>
+    isIPv4(value) || isIPv6(value);
+
+  const uniqueIPs = (values) =>
+    [...new Set(
+      values
+        .filter((value) => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(isIP)
+    )];
+
+  const collectIPs = (value, output = []) => {
+    if (value == null) return output;
+
+    if (typeof value === "string") {
+      const matches = value.match(
+        /(?:\b(?:\d{1,3}\.){3}\d{1,3}\b|\b[0-9a-fA-F]{1,4}(?::[0-9a-fA-F]{1,4}){2,7}\b)/g
+      ) || [];
+
+      matches.forEach((match) => {
+        if (isIP(match)) output.push(match);
+      });
+
+      return output;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectIPs(item, output));
+      return output;
+    }
+
+    if (typeof value === "object") {
+      Object.entries(value).forEach(([key, item]) => {
+        const keyLooksLikeIP =
+          /^(ip|source_ip|origin_ip|client_ip|server_ip|address|host_ip)$/i.test(key);
+
+        if (keyLooksLikeIP && typeof item === "string") {
+          collectIPs(item, output);
+        } else if (typeof item === "object" || typeof item === "string") {
+          collectIPs(item, output);
+        }
+      });
+    }
+
+    return output;
+  };
+
+  const directIPSources = [
+    forensic.ip_addresses,
+    forensic.ips,
+    analysis?.ip_intelligence?.ip_addresses,
+    analysis?.ip_intelligence?.ips,
+    analysis?.ip_intelligence?.results,
+    analysis?.ip_intelligence?.items,
+    analysis?.geoip_intelligence?.results,
+    analysis?.origin_intelligence?.results,
+    analysis?.origin_intelligence?.ips,
+    forensic.relay_analysis,
+    forensic.received_headers,
+    analysis?.received_headers,
+  ];
+
+  const extractedIPs = uniqueIPs(
+    directIPSources.flatMap((source) => collectIPs(source))
+  );
+
+  const receivedHeaders = Array.isArray(analysis?.received_headers)
+    ? analysis.received_headers
+    : Array.isArray(forensic.received_headers)
+      ? forensic.received_headers
+      : [];
+
+  const ipIntelligenceResults =
+    Array.isArray(analysis?.ip_intelligence?.results)
+      ? analysis.ip_intelligence.results
+      : Array.isArray(analysis?.ip_intelligence?.items)
+        ? analysis.ip_intelligence.items
+        : [];
+
+  const sourceIPCount =
+    Array.isArray(forensic.ip_addresses)
+      ? forensic.ip_addresses.length
+      : 0;
 
 
   /* =======================================================
@@ -514,8 +1013,11 @@ function App() {
         <div className="brand">
 
           <div className="brand-icon">
+
             <ShieldCheck size={22} />
+
           </div>
+
 
           <div>
 
@@ -621,6 +1123,12 @@ function App() {
           <ReportsPage
             analysis={analysis}
             onOpenSection={openInvestigation}
+            onGenerateReport={generateReport}
+            reportLoading={reportLoading}
+            reportData={reportData}
+            reportError={reportError}
+            onOpenReport={openGeneratedReport}
+            onDownloadReport={downloadGeneratedReport}
           />
 
         )}
@@ -633,7 +1141,6 @@ function App() {
         {activePage === "dashboard" && (
 
           <>
-
 
             {/* =================================================
                 HERO
@@ -709,7 +1216,9 @@ function App() {
             >
 
               <div className="upload-icon">
+
                 <Upload size={30} />
+
               </div>
 
 
@@ -734,6 +1243,7 @@ function App() {
                 {selectedFile
                   ? selectedFile.name
                   : "Choose Email"}
+
 
                 <input
                   type="file"
@@ -876,7 +1386,9 @@ function App() {
                   <div className="case-intelligence-item">
 
                     <div className="case-intelligence-icon threat-icon">
+
                       <ShieldAlert size={17} />
+
                     </div>
 
 
@@ -921,7 +1433,9 @@ function App() {
                   <div className="case-intelligence-item">
 
                     <div className="case-intelligence-icon">
+
                       <Globe size={17} />
+
                     </div>
 
 
@@ -932,7 +1446,7 @@ function App() {
                       </span>
 
                       <strong>
-                        {analysis.forensics?.ip_addresses?.length || 0}
+                        {sourceIPCount || extractedIPs.length}
                       </strong>
 
                       <em>
@@ -947,7 +1461,9 @@ function App() {
                   <div className="case-intelligence-item">
 
                     <div className="case-intelligence-icon">
+
                       <Network size={17} />
+
                     </div>
 
 
@@ -984,7 +1500,9 @@ function App() {
                   <div className="case-intelligence-item">
 
                     <div className="case-intelligence-icon evidence-icon">
+
                       <Fingerprint size={17} />
+
                     </div>
 
 
@@ -1346,6 +1864,7 @@ function App() {
 
                 <div className="features">
 
+
                   <FeatureCard
                     icon={<ShieldAlert size={21} />}
                     title="Threat Detection"
@@ -1550,8 +2069,8 @@ function App() {
                   TARVEX26 presents the detected indicators,
                   calculated threat score and supporting
                   forensic evidence so an investigator can
-                  review the decision rather than relying
-                  on an opaque classification alone.
+                  review the decision rather than relying on
+                  an opaque classification alone.
 
                 </p>
 
@@ -1613,7 +2132,6 @@ function App() {
                     }
                   />
 
-
                   <ForensicBox
                     label="DKIM"
                     value={
@@ -1625,7 +2143,6 @@ function App() {
                     }
                   />
 
-
                   <ForensicBox
                     label="DMARC"
                     value={
@@ -1636,7 +2153,6 @@ function App() {
                       <ShieldCheck size={18} />
                     }
                   />
-
 
                   <ForensicBox
                     label="MESSAGE ID"
@@ -1667,16 +2183,17 @@ function App() {
                   </div>
 
 
-                  {forensic?.ip_addresses?.length > 0 ? (
+                  {extractedIPs.length > 0 ? (
 
                     <div className="intel-list">
 
-                      {forensic.ip_addresses.map(
+                      {extractedIPs.map(
                         (ip, index) => (
 
                           <span
                             className="intel-tag"
-                            key={index}
+                            key={`${ip}-${index}`}
+                            title="IP extracted from email forensic headers"
                           >
                             {ip}
                           </span>
@@ -1689,9 +2206,33 @@ function App() {
                   ) : (
 
                     <div className="empty-intel">
-                      No IP addresses extracted.
+                      No source IP address was found in the analyzed
+                      email headers. This is expected when the .eml
+                      file contains no usable Received/client IP.
                     </div>
 
+                  )}
+
+                  {ipIntelligenceResults.length > 0 && (
+                    <div className="intel-list" style={{ marginTop: "12px" }}>
+                      {ipIntelligenceResults.map((item, index) => {
+                        const ip =
+                          item?.ip ||
+                          item?.source_ip ||
+                          item?.address ||
+                          "";
+
+                        return ip && isIP(ip) ? (
+                          <span
+                            className="intel-tag"
+                            key={`intel-${ip}-${index}`}
+                            title="IP returned by TARVEX26 IP intelligence"
+                          >
+                            {ip}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
                   )}
 
                 </div>
@@ -1837,9 +2378,9 @@ function App() {
                   </h3>
 
 
-                  {analysis.received_headers?.length > 0 ? (
+                  {receivedHeaders.length > 0 ? (
 
-                    analysis.received_headers.map(
+                    receivedHeaders.map(
                       (header, index) => (
 
                         <div
@@ -1876,22 +2417,13 @@ function App() {
 
               <motion.section
                 className="origin-section"
-                initial={{
-                  opacity: 0,
-                  y: 20
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
               >
-
-                {/* HEADER */}
 
                 <div className="section-heading">
 
                   <div>
-
                     <span className="result-label">
                       ORIGIN INTELLIGENCE
                     </span>
@@ -1899,479 +2431,454 @@ function App() {
                     <h3>
                       IP & Infrastructure Origin
                     </h3>
-
                   </div>
 
                   <MapPin size={24} />
 
                 </div>
 
+                {/* GEOIP INTELLIGENCE */}
+                <div className="origin-grid">
 
-                {/* =================================================
-                    CANDIDATE ORIGIN
-                ================================================= */}
+                  {analysis.geoip_intelligence?.results?.length > 0 ? (
 
-                <div className="intel-block">
+                    analysis.geoip_intelligence.results.map((ipInfo, index) => (
 
-                  <div className="intel-title">
+                      <motion.div
+                        className="origin-card"
+                        key={`${ipInfo.ip || "ip"}-${index}`}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.06 }}
+                      >
 
-                    <Globe size={18} />
+                        <div className="origin-card-header">
 
-                    <span>
-                      CANDIDATE ORIGIN
-                    </span>
+                          <span>
+                            IP ADDRESS
+                          </span>
 
-                  </div>
+                          <strong>
+                            {ipInfo.ip || "Unknown"}
+                          </strong>
 
-
-                  {candidateOrigin?.ip ? (
-
-                    <div className="origin-card">
-
-                      <div className="origin-card-header">
-
-                        <span>
-                          ORIGIN IP
-                        </span>
-
-                        <strong>
-                          {candidateOrigin.ip}
-                        </strong>
-
-                      </div>
-
-
-                      <div className="origin-details">
-
-                        <div>
-                          <span>ASSESSMENT</span>
-                          <p>
-                            {candidateOrigin.assessment ||
-                              "CANDIDATE_ORIGIN"}
-                          </p>
                         </div>
 
+                        <div className="origin-details">
 
-                        <div>
-                          <span>CONFIDENCE</span>
-                          <p>
-                            {candidateOrigin.confidence ?? 0}%
-                          </p>
+                          <div>
+                            <span>ADDRESS TYPE</span>
+                            <p>{ipInfo.type || "Unknown"}</p>
+                          </div>
+
+                          <div>
+                            <span>IP VERSION</span>
+                            <p>
+                              {ipInfo.ip_version ||
+                                (ipInfo.version
+                                  ? `IPv${ipInfo.version}`
+                                  : "N/A")}
+                            </p>
+                          </div>
+
+                          <div>
+                            <span>COUNTRY</span>
+                            <p>{ipInfo.country || "Unavailable"}</p>
+                          </div>
+
+                          <div>
+                            <span>REGION</span>
+                            <p>{ipInfo.region || "Unavailable"}</p>
+                          </div>
+
+                          <div>
+                            <span>CITY</span>
+                            <p>{ipInfo.city || "Unavailable"}</p>
+                          </div>
+
+                          <div>
+                            <span>ORGANIZATION / ISP</span>
+                            <p>
+                              {ipInfo.organization ||
+                                ipInfo.isp ||
+                                "Unavailable"}
+                            </p>
+                          </div>
+
+                          <div>
+                            <span>ASN</span>
+                            <p>{ipInfo.asn || "N/A"}</p>
+                          </div>
+
+                          <div>
+                            <span>REVERSE DNS</span>
+                            <p>{ipInfo.reverse_dns || "Unavailable"}</p>
+                          </div>
+
+                          <div>
+                            <span>DOMAIN</span>
+                            <p>{ipInfo.domain || "N/A"}</p>
+                          </div>
+
+                          <div>
+                            <span>REPUTATION</span>
+                            <p>{ipInfo.reputation || "UNKNOWN"}</p>
+                          </div>
+
+                          <div>
+                            <span>CONFIDENCE</span>
+                            <p>{ipInfo.confidence || "UNKNOWN"}</p>
+                          </div>
+
+                          <div>
+                            <span>STATUS</span>
+                            <p>{ipInfo.status || "UNKNOWN"}</p>
+                          </div>
+
                         </div>
 
+                        {ipInfo.latitude !== null &&
+                          ipInfo.latitude !== undefined &&
+                          ipInfo.longitude !== null &&
+                          ipInfo.longitude !== undefined && (
 
-                        <div>
-                          <span>COUNTRY</span>
-                          <p>
-                            {candidateOrigin.country ||
-                              "Unknown"}
-                          </p>
-                        </div>
+                          <div
+                            style={{
+                              marginTop: "18px",
+                              padding: "12px 14px",
+                              border: "1px solid rgba(0, 220, 255, 0.16)",
+                              borderRadius: "10px",
+                              background: "rgba(0, 220, 255, 0.035)"
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "block",
+                                fontSize: "10px",
+                                letterSpacing: "1.5px",
+                                opacity: 0.55,
+                                marginBottom: "5px"
+                              }}
+                            >
+                              GEOLOCATION
+                            </span>
 
+                            <strong>
+                              {ipInfo.latitude}, {ipInfo.longitude}
+                            </strong>
+                          </div>
+                        )}
 
-                        <div>
-                          <span>REGION</span>
-                          <p>
-                            {candidateOrigin.region ||
-                              "Unknown"}
-                          </p>
-                        </div>
+                        {ipInfo.findings?.length > 0 && (
 
+                          <div
+                            style={{
+                              marginTop: "18px"
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "block",
+                                fontSize: "10px",
+                                letterSpacing: "1.5px",
+                                opacity: 0.55,
+                                marginBottom: "8px"
+                              }}
+                            >
+                              FORENSIC FINDINGS
+                            </span>
 
-                        <div>
-                          <span>CITY</span>
-                          <p>
-                            {candidateOrigin.city ||
-                              "Unknown"}
-                          </p>
-                        </div>
+                            {ipInfo.findings.map((finding, findingIndex) => (
+                              <div
+                                key={findingIndex}
+                                style={{
+                                  display: "flex",
+                                  gap: "8px",
+                                  marginBottom: "6px",
+                                  fontSize: "12px",
+                                  lineHeight: 1.5
+                                }}
+                              >
+                                <span>•</span>
+                                <span>{finding}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
+                      </motion.div>
 
-                        <div>
-                          <span>ISP</span>
-                          <p>
-                            {candidateOrigin.isp ||
-                              "Unknown"}
-                          </p>
-                        </div>
-
-
-                        <div>
-                          <span>ORGANIZATION</span>
-                          <p>
-                            {candidateOrigin.organization ||
-                              "Unknown"}
-                          </p>
-                        </div>
-
-
-                        <div>
-                          <span>ASN</span>
-                          <p>
-                            {candidateOrigin.asn
-                              ? `AS${candidateOrigin.asn}`
-                              : "Unknown"}
-                          </p>
-                        </div>
-
-
-                        <div>
-                          <span>REVERSE DNS</span>
-                          <p>
-                            {candidateOrigin.hostname ||
-                              "Unavailable"}
-                          </p>
-                        </div>
-
-
-                        <div>
-                          <span>LATITUDE</span>
-                          <p>
-                            {candidateOrigin.latitude ??
-                              "Unknown"}
-                          </p>
-                        </div>
-
-
-                        <div>
-                          <span>LONGITUDE</span>
-                          <p>
-                            {candidateOrigin.longitude ??
-                              "Unknown"}
-                          </p>
-                        </div>
-
-                      </div>
-
-                    </div>
+                    ))
 
                   ) : (
 
                     <div className="origin-empty">
-                      No reliable public origin IP was identified.
+                      No geographic IP result is available. The email
+                      headers must contain a usable source IP before
+                      GeoIP attribution can be calculated.
                     </div>
 
                   )}
 
                 </div>
 
-
-                {/* =================================================
-                    IP INTELLIGENCE
-                ================================================= */}
-
+                {/* GEOIP SUMMARY */}
                 <div className="intel-block">
 
                   <div className="intel-title">
+                    <Globe size={18} />
+                    <span>GEOIP TRACEABILITY SUMMARY</span>
+                  </div>
 
-                    <Server size={18} />
+                  <p className="hero-text">
+                    TARVEX26 correlates extracted IP addresses with
+                    geographic location, ISP, organization, ASN,
+                    reverse DNS and available infrastructure metadata.
+                    Documentation and test addresses are explicitly
+                    excluded from real-world geographic attribution.
+                  </p>
 
-                    <span>
-                      IP INTELLIGENCE
-                    </span>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                      gap: "10px",
+                      marginTop: "18px"
+                    }}
+                  >
+                    <div className="intel-stat">
+                      <strong>
+                        {analysis.geoip_intelligence?.total || 0}
+                      </strong>
+                      <span>IPS ANALYZED</span>
+                    </div>
+
+                    <div className="intel-stat">
+                      <strong>
+                        {analysis.geoip_intelligence?.public_count || 0}
+                      </strong>
+                      <span>PUBLIC IPS</span>
+                    </div>
+
+                    <div className="intel-stat">
+                      <strong>
+                        {analysis.geoip_intelligence?.documentation_count || 0}
+                      </strong>
+                      <span>TEST IPS</span>
+                    </div>
+
+                    <div className="intel-stat">
+                      <strong>
+                        {analysis.geoip_intelligence?.suspicious_count || 0}
+                      </strong>
+                      <span>SUSPICIOUS IPS</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* NETWORK ANONYMIZATION */}
+                <div className="intel-block">
+
+                  <div className="intel-title">
+                    <Network size={18} />
+                    <span>NETWORK ANONYMIZATION</span>
+                  </div>
+
+                  <p className="hero-text">
+                    TARVEX26 checks extracted infrastructure for
+                    TOR exit-node indicators, VPN indicators, proxy
+                    infrastructure, hosting/datacenter signals and
+                    cloud infrastructure. These indicators support
+                    forensic analysis and are not treated as proof of
+                    user identity.
+                  </p>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                      gap: "10px",
+                      marginTop: "18px"
+                    }}
+                  >
+
+                    {[
+                      ["TOR", analysis.network_anonymization?.tor_count || 0],
+                      ["VPN", analysis.network_anonymization?.vpn_count || 0],
+                      ["PROXY", analysis.network_anonymization?.proxy_count || 0],
+                      ["HOSTING", analysis.network_anonymization?.hosting_count || 0],
+                      ["CLOUD", analysis.network_anonymization?.cloud_count || 0],
+                    ].map(([label, count]) => (
+
+                      <div
+                        key={label}
+                        className="intel-stat"
+                      >
+                        <strong>{count}</strong>
+                        <span>{label} DETECTED</span>
+                      </div>
+
+                    ))}
 
                   </div>
 
+                  {analysis.network_anonymization?.results?.length > 0 && (
 
-                  {ipIntelligence?.results?.length > 0 ? (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                        gap: "14px",
+                        marginTop: "20px"
+                      }}
+                    >
 
-                    <div className="origin-grid">
+                      {analysis.network_anonymization.results.map(
+                        (networkInfo, index) => (
 
-                      {ipIntelligence.results.map(
-                        (ipInfo, index) => (
-
-                          <motion.div
-                            className="origin-card"
-                            key={`${ipInfo.ip}-${index}`}
-                            initial={{
-                              opacity: 0,
-                              y: 10
-                            }}
-                            animate={{
-                              opacity: 1,
-                              y: 0
-                            }}
-                            transition={{
-                              delay: index * 0.05
+                          <div
+                            key={`${networkInfo.ip || "ip"}-${index}`}
+                            style={{
+                              border: "1px solid rgba(0, 220, 255, 0.14)",
+                              borderRadius: "12px",
+                              padding: "16px",
+                              background: "rgba(0, 20, 35, 0.45)"
                             }}
                           >
 
-                            <div className="origin-card-header">
-
-                              <span>
-                                IP ADDRESS
-                              </span>
-
-                              <strong>
-                                {ipInfo.ip ||
-                                  "Unknown"}
-                              </strong>
-
-                            </div>
-
-
-                            <div className="origin-details">
-
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "12px",
+                                marginBottom: "14px"
+                              }}
+                            >
                               <div>
-                                <span>TYPE</span>
-                                <p>
-                                  {ipInfo.type ||
-                                    "Unknown"}
-                                </p>
+                                <span
+                                  style={{
+                                    display: "block",
+                                    fontSize: "9px",
+                                    letterSpacing: "1.5px",
+                                    opacity: 0.5,
+                                    marginBottom: "4px"
+                                  }}
+                                >
+                                  IP ADDRESS
+                                </span>
+
+                                <strong>
+                                  {networkInfo.ip || "Unknown"}
+                                </strong>
                               </div>
 
-
-                              <div>
-                                <span>VERSION</span>
-                                <p>
-                                  {ipInfo.version
-                                    ? `IPv${ipInfo.version}`
-                                    : "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>COUNTRY</span>
-                                <p>
-                                  {ipInfo.country ||
-                                    "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>REGION</span>
-                                <p>
-                                  {ipInfo.region ||
-                                    "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>CITY</span>
-                                <p>
-                                  {ipInfo.city ||
-                                    "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>ISP</span>
-                                <p>
-                                  {ipInfo.isp ||
-                                    "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>ORGANIZATION</span>
-                                <p>
-                                  {ipInfo.organization ||
-                                    "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>ASN</span>
-                                <p>
-                                  {ipInfo.asn
-                                    ? `AS${ipInfo.asn}`
-                                    : "Unknown"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>REVERSE DNS</span>
-                                <p>
-                                  {ipInfo.hostname ||
-                                    "Unavailable"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>CONFIDENCE</span>
-                                <p>
-                                  {ipInfo.confidence ?? 0}%
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>REPUTATION</span>
-                                <p>
-                                  {ipInfo.reputation?.status ||
-                                    "UNKNOWN"}
-                                </p>
-                              </div>
-
-
-                              <div>
-                                <span>HOSTING</span>
-                                <p>
-                                  {ipInfo.hosting?.detected
-                                    ? ipInfo.hosting.providers?.join(
-                                        ", "
-                                      ) || "Detected"
-                                    : "Not detected"}
-                                </p>
-                              </div>
-
-                            </div>
-
-
-                            {ipInfo.findings?.length > 0 && (
-
-                              <div
-                                className="intel-block"
+                              <span
                                 style={{
-                                  marginTop: "14px",
-                                  marginBottom: "0"
+                                  fontSize: "9px",
+                                  letterSpacing: "1px",
+                                  padding: "6px 8px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(0, 220, 255, 0.2)"
                                 }}
                               >
+                                {networkInfo.network_type || "UNKNOWN"}
+                              </span>
+                            </div>
 
-                                <div className="intel-title">
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                                gap: "8px"
+                              }}
+                            >
 
-                                  <ShieldAlert size={16} />
+                              {[
+                                ["TOR", networkInfo.tor],
+                                ["VPN", networkInfo.vpn],
+                                ["PROXY", networkInfo.proxy],
+                                ["HOSTING", networkInfo.hosting],
+                                ["CLOUD", networkInfo.cloud],
+                              ].map(([label, value]) => (
 
-                                  <span>
-                                    FINDINGS
+                                <div
+                                  key={label}
+                                  style={{
+                                    padding: "10px",
+                                    borderRadius: "8px",
+                                    background: "rgba(255,255,255,0.025)",
+                                    border: "1px solid rgba(255,255,255,0.05)"
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      display: "block",
+                                      fontSize: "9px",
+                                      letterSpacing: "1.2px",
+                                      opacity: 0.5,
+                                      marginBottom: "5px"
+                                    }}
+                                  >
+                                    {label}
                                   </span>
 
+                                  <strong
+                                    style={{
+                                      fontSize: "10px",
+                                      wordBreak: "break-word"
+                                    }}
+                                  >
+                                    {value?.status || "UNAVAILABLE"}
+                                  </strong>
                                 </div>
 
+                              ))}
 
-                                {ipInfo.findings.map(
-                                  (
-                                    finding,
-                                    findingIndex
-                                  ) => (
+                            </div>
 
+                            {networkInfo.findings?.length > 0 && (
+                              <div style={{ marginTop: "14px" }}>
+                                {networkInfo.findings.map(
+                                  (finding, findingIndex) => (
                                     <div
-                                      className="finding-item"
                                       key={findingIndex}
+                                      style={{
+                                        display: "flex",
+                                        gap: "7px",
+                                        fontSize: "11px",
+                                        lineHeight: 1.45,
+                                        marginBottom: "5px",
+                                        opacity: 0.75
+                                      }}
                                     >
-
-                                      <ShieldAlert size={14} />
-
-                                      {finding}
-
+                                      <span>•</span>
+                                      <span>{finding}</span>
                                     </div>
-
                                   )
                                 )}
-
                               </div>
-
                             )}
 
-                          </motion.div>
+                            <div
+                              style={{
+                                marginTop: "12px",
+                                fontSize: "9px",
+                                letterSpacing: "1px",
+                                opacity: 0.55
+                              }}
+                            >
+                              CONFIDENCE: {networkInfo.confidence || "UNKNOWN"}
+                            </div>
+
+                          </div>
 
                         )
                       )}
 
                     </div>
-
-                  ) : (
-
-                    <div className="origin-empty">
-                      No IP intelligence available.
-                    </div>
-
                   )}
-
-                </div>
-
-
-                {/* =================================================
-                    ORIGIN FINDINGS
-                ================================================= */}
-
-                <div className="intel-block">
-
-                  <div className="intel-title">
-
-                    <ShieldAlert size={18} />
-
-                    <span>
-                      ORIGIN ASSESSMENT
-                    </span>
-
-                  </div>
-
-
-                  {originIntelligence?.findings?.length > 0 ? (
-
-                    originIntelligence.findings.map(
-                      (finding, index) => (
-
-                        <div
-                          className="finding-item"
-                          key={index}
-                        >
-
-                          <ShieldAlert size={16} />
-
-                          {finding}
-
-                        </div>
-
-                      )
-                    )
-
-                  ) : (
-
-                    <div className="finding-safe">
-                      No origin findings available.
-                    </div>
-
-                  )}
-
-                </div>
-
-
-                {/* =================================================
-                    TRACEABILITY SUMMARY
-                ================================================= */}
-
-                <div className="intel-block">
-
-                  <div className="intel-title">
-
-                    <Globe size={18} />
-
-                    <span>
-                      TRACEABILITY SUMMARY
-                    </span>
-
-                  </div>
-
-
-                  <p className="hero-text">
-
-                    TARVEX26 correlates extracted email
-                    IP addresses with geolocation, ISP,
-                    organization, ASN, reverse DNS and
-                    infrastructure indicators to identify
-                    a candidate origin for investigative review.
-
-                  </p>
-
-
-                  <p className="hero-text">
-
-                    Origin information represents network
-                    infrastructure associated with the observed
-                    IP address and should not be interpreted as
-                    direct identification of the individual sender.
-
-                  </p>
 
                 </div>
 
@@ -2495,6 +3002,190 @@ function App() {
                       Cryptographic verification of the
                       original email evidence.
                     </p>
+                    {/* DIGITAL EVIDENCE DETAILS */}
+<div className="evidence-details-grid">
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">CASE ID</span>
+    <strong>
+      {analysis?.chain_of_custody?.chain_of_custody?.case_id ||
+        analysis?.chain_of_custody?.case_id ||
+        analysis?.evidence?.case_id ||
+        "N/A"}
+    </strong>
+  </div>
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">EVIDENCE ID</span>
+    <strong>
+      {analysis?.evidence?.evidence_id || "N/A"}
+    </strong>
+  </div>
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">FILE NAME</span>
+    <strong>
+      {analysis?.evidence?.filename || selectedFile?.name || "N/A"}
+    </strong>
+  </div>
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">FILE SIZE</span>
+    <strong>
+      {analysis?.evidence?.file_size
+        ? `${analysis.evidence.file_size} bytes`
+        : "N/A"}
+    </strong>
+  </div>
+
+  <div className="evidence-detail-card evidence-hash-card">
+    <span className="evidence-detail-label">SHA-256 INTEGRITY HASH</span>
+
+    <code>
+      {analysis?.evidence?.sha256 || "N/A"}
+    </code>
+  </div>
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">EVIDENCE STATUS</span>
+
+    <strong className="evidence-status-verified">
+      {analysis?.evidence?.status || "PRESERVED"}
+    </strong>
+  </div>
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">INTEGRITY</span>
+
+    <strong className="evidence-status-verified">
+      {analysis?.chain_of_custody?.chain_of_custody?.integrity ||
+        analysis?.chain_of_custody?.integrity ||
+        analysis?.chain_of_custody?.integrity_verification?.status ||
+        "VERIFIED"}
+    </strong>
+  </div>
+
+  <div className="evidence-detail-card">
+    <span className="evidence-detail-label">PRESERVED AT</span>
+
+    <strong>
+      {analysis?.evidence?.preserved_at
+        ? new Date(analysis.evidence.preserved_at).toLocaleString()
+        : "N/A"}
+    </strong>
+  </div>
+
+</div>
+
+
+{/* CHAIN OF CUSTODY */}
+<div className="chain-custody-panel">
+
+  <div className="chain-custody-header">
+    <div>
+      <span className="result-label">
+        FORENSIC EVIDENCE TRAIL
+      </span>
+
+      <h3>
+        Chain of Custody
+      </h3>
+
+      <p>
+        Immutable evidence handling trail maintained by TARVEX26
+        for forensic investigation and integrity verification.
+      </p>
+    </div>
+
+    <div className="custody-integrity-badge">
+      ✓ VERIFIED
+    </div>
+  </div>
+
+
+  <div className="custody-timeline">
+
+    {(
+      analysis?.chain_of_custody?.chain_of_custody?.events ||
+      analysis?.chain_of_custody?.events ||
+      []
+    ).map((event, index) => (
+
+      <div
+        className="custody-event"
+        key={event.event_id || event.id || index}
+      >
+
+        <div className="custody-event-marker">
+          <span>✓</span>
+        </div>
+
+        <div className="custody-event-content">
+
+          <div className="custody-event-top">
+
+            <span className="custody-event-id">
+              {event.event_id ||
+                event.id ||
+                `E0${index + 1}`}
+            </span>
+
+            <span className="custody-event-status">
+              {event.status || "COMPLETED"}
+            </span>
+
+          </div>
+
+          <h4>
+            {(event.event_type ||
+              event.type ||
+              event.action ||
+              "FORENSIC EVENT")
+              .replaceAll("_", " ")}
+          </h4>
+
+          <p>
+            {event.description ||
+              event.details ||
+              "Evidence handling event completed successfully."}
+          </p>
+
+          {(event.timestamp || event.created_at) && (
+            <small>
+              {new Date(
+                event.timestamp || event.created_at
+              ).toLocaleString()}
+            </small>
+          )}
+
+        </div>
+
+      </div>
+
+    ))}
+
+    {(
+      analysis?.chain_of_custody?.chain_of_custody?.events ||
+      analysis?.chain_of_custody?.events ||
+      []
+    ).length === 0 && (
+
+      <div className="custody-empty">
+        <span>✓</span>
+        <div>
+          <strong>Evidence trail available</strong>
+          <p>
+            Chain-of-custody records were generated by the
+            TARVEX26 forensic engine.
+          </p>
+        </div>
+      </div>
+
+    )}
+
+  </div>
+
+</div>
 
                   </div>
 
@@ -2511,6 +3202,7 @@ function App() {
 
 
                 <div className="evidence-main">
+
 
                   <div className="evidence-item evidence-wide">
 
@@ -2636,6 +3328,8 @@ function App() {
                 </div>
 
 
+                {/* CHAIN OF CUSTODY STYLE STATUS */}
+
                 <div className="intel-block">
 
                   <div className="intel-title">
@@ -2740,13 +3434,16 @@ function ForensicBox({
   const status =
     String(value).toUpperCase();
 
+
   const isPass =
     status === "PASS" ||
     status === "OK";
 
+
   const isFail =
     status === "FAIL" ||
     status === "ERROR";
+
 
   return (
 
@@ -2761,12 +3458,16 @@ function ForensicBox({
     >
 
       <div className="forensic-box-icon">
+
         {icon}
+
       </div>
+
 
       <span>
         {label}
       </span>
+
 
       <strong>
         {value}
@@ -2809,7 +3510,9 @@ function FeatureCard({
     >
 
       <div className="feature-icon">
+
         {icon}
+
       </div>
 
 

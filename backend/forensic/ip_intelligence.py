@@ -1,550 +1,529 @@
 """
 TARVEX26
-IP Intelligence & Origin Analysis Engine
+IP Intelligence & Reputation Engine
 SIH26106 - Email Threat Detection and Forensic Intelligence
 
 Capabilities:
 - IPv4 / IPv6 validation
-- Public / private / reserved classification
-- Reverse DNS / PTR lookup
-- IP geolocation
-- Country / region / city
-- ISP / organization
-- ASN
-- Latitude / longitude
-- Hosting / cloud indicators
+- Public/private/reserved classification
+- Reverse DNS
+- Network classification
+- Documentation/test IP detection
+- Basic infrastructure indicators
 - Optional AbuseIPDB reputation lookup
-- Confidence and forensic findings
+- Explainable findings
+- Confidence assessment
 """
 
-import ipaddress
 import os
+import ipaddress
 import socket
+from datetime import datetime, timezone
+
 import requests
 
 
-IP_GEOLOCATION_API = "https://ipwho.is/{}"
-ABUSEIPDB_API = "https://api.abuseipdb.com/api/v2/check"
+ABUSEIPDB_API_KEY = os.getenv("ABUSEIPDB_API_KEY", "").strip()
+
+ABUSEIPDB_URL = "https://api.abuseipdb.com/api/v2/check"
+
+REQUEST_TIMEOUT = 5
 
 
-CLOUD_KEYWORDS = [
-    "amazon",
-    "aws",
-    "google cloud",
-    "microsoft",
-    "azure",
-    "digitalocean",
-    "oracle cloud",
-    "cloudflare",
-    "ovh",
-    "linode",
-    "vultr",
-    "akamai",
-]
+# ============================================================
+# IP CLASSIFICATION
+# ============================================================
 
-
-def reverse_dns(ip):
+def _classify_ip(ip_obj):
     """
-    Perform reverse DNS / PTR lookup.
+    Classify an IP without assuming that every non-public IP
+    is malicious.
     """
 
+    if ip_obj.is_loopback:
+        return "LOOPBACK"
+
+    if ip_obj.is_private:
+        return "PRIVATE"
+
+    if ip_obj.is_link_local:
+        return "LINK_LOCAL"
+
+    if ip_obj.is_multicast:
+        return "MULTICAST"
+
+    if ip_obj.is_reserved:
+        return "RESERVED"
+
+    if ip_obj.is_unspecified:
+        return "UNSPECIFIED"
+
+    return "PUBLIC"
+
+
+# ============================================================
+# DOCUMENTATION / TEST NETWORKS
+# ============================================================
+
+def _is_documentation_ip(ip_obj):
+    """
+    RFC documentation/test ranges.
+
+    These should not be treated as real geolocation targets.
+    """
+
+    documentation_networks = [
+        ipaddress.ip_network("192.0.2.0/24"),
+        ipaddress.ip_network("198.51.100.0/24"),
+        ipaddress.ip_network("203.0.113.0/24"),
+        ipaddress.ip_network("2001:db8::/32"),
+    ]
+
+    return any(ip_obj in network for network in documentation_networks)
+
+
+# ============================================================
+# REVERSE DNS
+# ============================================================
+
+def _reverse_dns(ip):
     try:
-        hostname = socket.gethostbyaddr(ip)[0]
+        hostname, aliases, addresses = socket.gethostbyaddr(ip)
 
-        return hostname
+        return {
+            "status": "FOUND",
+            "hostname": hostname,
+            "aliases": aliases,
+            "addresses": addresses,
+        }
 
-    except Exception:
-        return None
+    except Exception as error:
+        return {
+            "status": "NOT_FOUND",
+            "hostname": None,
+            "aliases": [],
+            "addresses": [],
+            "error": str(error),
+        }
 
 
-def get_geolocation(ip):
+# ============================================================
+# INFRASTRUCTURE HEURISTICS
+# ============================================================
+
+def _infrastructure_indicator(hostname):
+    if not hostname:
+        return {
+            "is_cloud": False,
+            "is_hosting": False,
+            "provider_hint": None,
+        }
+
+    value = hostname.lower()
+
+    cloud_keywords = {
+        "amazonaws": "AWS",
+        "compute.amazonaws": "AWS",
+        "cloudfront": "AWS",
+        "googleusercontent": "Google Cloud",
+        "googlehosted": "Google Cloud",
+        "azure": "Microsoft Azure",
+        "microsoft": "Microsoft",
+        "digitalocean": "DigitalOcean",
+        "linode": "Linode",
+        "vultr": "Vultr",
+        "oraclecloud": "Oracle Cloud",
+        "cloudflare": "Cloudflare",
+    }
+
+    hosting_keywords = [
+        "host",
+        "server",
+        "vps",
+        "dedicated",
+        "colo",
+        "datacenter",
+        "compute",
+        "cloud",
+    ]
+
+    provider_hint = None
+
+    for keyword, provider in cloud_keywords.items():
+        if keyword in value:
+            provider_hint = provider
+            break
+
+    return {
+        "is_cloud": provider_hint is not None,
+        "is_hosting": any(word in value for word in hosting_keywords),
+        "provider_hint": provider_hint,
+    }
+
+
+# ============================================================
+# ABUSEIPDB
+# ============================================================
+
+def _abuseipdb_lookup(ip):
     """
-    Retrieve public IP geolocation and network information.
-    Uses ipwho.is.
+    Optional live reputation lookup.
+
+    If no API key is configured, this deliberately returns
+    UNKNOWN instead of pretending that the IP is clean.
     """
+
+    if not ABUSEIPDB_API_KEY:
+        return {
+            "status": "UNAVAILABLE",
+            "message": "AbuseIPDB API key not configured.",
+            "abuse_confidence_score": None,
+            "total_reports": None,
+            "last_reported_at": None,
+            "country_code": None,
+            "isp": None,
+            "domain": None,
+        }
 
     try:
         response = requests.get(
-            IP_GEOLOCATION_API.format(ip),
-            timeout=5
-        )
-
-        if response.status_code != 200:
-            return {}
-
-        data = response.json()
-
-        if not data.get("success", False):
-            return {}
-
-        connection = data.get("connection", {})
-
-        return {
-            "country": data.get("country"),
-            "country_code": data.get("country_code"),
-            "region": data.get("region"),
-            "city": data.get("city"),
-            "latitude": data.get("latitude"),
-            "longitude": data.get("longitude"),
-            "timezone": data.get("timezone", {}).get("id")
-            if isinstance(data.get("timezone"), dict)
-            else None,
-            "isp": connection.get("isp"),
-            "organization": connection.get("org"),
-            "asn": connection.get("asn"),
-            "domain": connection.get("domain"),
-        }
-
-    except Exception:
-        return {}
-
-
-def check_abuseipdb(ip):
-    """
-    Optional AbuseIPDB reputation lookup.
-
-    Requires:
-
-        ABUSEIPDB_API_KEY
-
-    environment variable.
-
-    If no API key is configured, the result remains UNKNOWN.
-    """
-
-    api_key = os.getenv("ABUSEIPDB_API_KEY")
-
-    if not api_key:
-        return {
-            "status": "UNKNOWN",
-            "available": False,
-            "message": "AbuseIPDB API key not configured"
-        }
-
-    try:
-        response = requests.get(
-            ABUSEIPDB_API,
+            ABUSEIPDB_URL,
             headers={
-                "Key": api_key,
-                "Accept": "application/json"
+                "Key": ABUSEIPDB_API_KEY,
+                "Accept": "application/json",
             },
             params={
                 "ipAddress": ip,
-                "maxAgeInDays": 90
+                "maxAgeInDays": 90,
             },
-            timeout=5
+            timeout=REQUEST_TIMEOUT,
         )
 
         if response.status_code != 200:
             return {
                 "status": "UNAVAILABLE",
-                "available": False,
-                "message": f"AbuseIPDB HTTP {response.status_code}"
+                "message": f"AbuseIPDB HTTP {response.status_code}",
+                "abuse_confidence_score": None,
+                "total_reports": None,
+                "last_reported_at": None,
+                "country_code": None,
+                "isp": None,
+                "domain": None,
             }
 
         data = response.json().get("data", {})
 
-        abuse_score = data.get("abuseConfidenceScore", 0)
+        score = data.get("abuseConfidenceScore", 0)
+        reports = data.get("totalReports", 0)
 
-        if abuse_score >= 75:
-            status = "MALICIOUS"
-
-        elif abuse_score >= 25:
-            status = "SUSPICIOUS"
-
+        if score >= 80:
+            reputation = "MALICIOUS"
+        elif score >= 30:
+            reputation = "SUSPICIOUS"
         else:
-            status = "CLEAN"
+            reputation = "LOW_RISK"
 
         return {
-            "status": status,
-            "available": True,
-            "abuse_confidence_score": abuse_score,
-            "total_reports": data.get("totalReports", 0),
+            "status": "FOUND",
+            "reputation": reputation,
+            "message": "Live AbuseIPDB reputation available.",
+            "abuse_confidence_score": score,
+            "total_reports": reports,
             "last_reported_at": data.get("lastReportedAt"),
             "country_code": data.get("countryCode"),
             "isp": data.get("isp"),
-            "domain": data.get("domain")
+            "domain": data.get("domain"),
         }
 
     except Exception as error:
-
         return {
             "status": "UNAVAILABLE",
-            "available": False,
-            "message": str(error)
+            "message": str(error),
+            "abuse_confidence_score": None,
+            "total_reports": None,
+            "last_reported_at": None,
+            "country_code": None,
+            "isp": None,
+            "domain": None,
         }
 
 
-def detect_cloud_or_hosting(organization, isp, hostname):
-    """
-    Detect possible cloud / hosting infrastructure using
-    organization, ISP and hostname keywords.
+# ============================================================
+# SINGLE IP ANALYSIS
+# ============================================================
 
-    This is an indicator, NOT proof of malicious activity.
-    """
+def _analyze_single_ip(raw_ip):
 
-    combined = " ".join([
-        str(organization or ""),
-        str(isp or ""),
-        str(hostname or "")
-    ]).lower()
-
-    matches = [
-        keyword
-        for keyword in CLOUD_KEYWORDS
-        if keyword in combined
-    ]
-
-    return {
-        "detected": len(matches) > 0,
-        "providers": list(dict.fromkeys(matches))
-    }
-
-
-def analyze_ip(ip):
-    """
-    Perform complete intelligence analysis on one IP address.
-    """
-
-    original_ip = str(ip).strip()
-
-    try:
-        ip_obj = ipaddress.ip_address(original_ip)
-
-    except ValueError:
-
-        return {
-            "ip": original_ip,
-            "version": None,
-            "type": "Invalid IP",
-            "is_global": False,
-            "is_private": False,
-            "country": "Unknown",
-            "region": "Unknown",
-            "city": "Unknown",
-            "organization": "Unknown",
-            "isp": "Unknown",
-            "asn": "Unknown",
-            "hostname": None,
-            "latitude": None,
-            "longitude": None,
-            "reputation": {
-                "status": "UNKNOWN"
-            },
-            "hosting": {
-                "detected": False,
-                "providers": []
-            },
-            "confidence": 0,
-            "findings": [
-                "Invalid IP address"
-            ]
-        }
-
-    # ---------------------------------------
-    # IP CLASSIFICATION
-    # ---------------------------------------
-
-    if ip_obj.is_loopback:
-
-        ip_type = "Loopback IP"
-
-    elif ip_obj.is_private:
-
-        ip_type = "Private IP"
-
-    elif ip_obj.is_reserved:
-
-        ip_type = "Reserved IP"
-
-    elif ip_obj.is_multicast:
-
-        ip_type = "Multicast IP"
-
-    elif ip_obj.is_global:
-
-        ip_type = "Public IP"
-
-    else:
-
-        ip_type = "Special-use IP"
-
+    raw_ip = str(raw_ip).strip()
 
     result = {
-        "ip": original_ip,
-        "version": ip_obj.version,
-        "type": ip_type,
-        "is_global": ip_obj.is_global,
-        "is_private": ip_obj.is_private,
-
-        "country": "Unknown",
-        "country_code": None,
-        "region": "Unknown",
-        "city": "Unknown",
-
-        "organization": "Unknown",
-        "isp": "Unknown",
-        "asn": "Unknown",
-
-        "hostname": None,
-
-        "latitude": None,
-        "longitude": None,
-
-        "timezone": None,
-
+        "ip": raw_ip,
+        "version": None,
+        "address_type": "UNKNOWN",
+        "is_public": False,
+        "is_private": False,
+        "is_reserved": False,
+        "is_documentation": False,
+        "reverse_dns": None,
+        "infrastructure": {
+            "is_cloud": False,
+            "is_hosting": False,
+            "provider_hint": None,
+        },
         "reputation": {
             "status": "UNKNOWN",
-            "available": False
+            "reputation": "UNKNOWN",
         },
-
-        "hosting": {
-            "detected": False,
-            "providers": []
-        },
-
-        "confidence": 50,
-
-        "findings": []
+        "findings": [],
+        "confidence": "LOW",
+        "analyzed_at": datetime.now(timezone.utc).isoformat(),
     }
 
+    # --------------------------------------------------------
+    # VALIDATION
+    # --------------------------------------------------------
 
-    # ---------------------------------------
-    # PRIVATE / SPECIAL IP
-    # ---------------------------------------
+    try:
+        ip_obj = ipaddress.ip_address(raw_ip)
 
-    if not ip_obj.is_global:
+    except ValueError:
+        result["address_type"] = "INVALID"
+        result["findings"].append(
+            f"Invalid IP address format: {raw_ip}"
+        )
+        return result
 
-        result["confidence"] = 100
+    # --------------------------------------------------------
+    # BASIC INFORMATION
+    # --------------------------------------------------------
 
-        if ip_obj.is_private:
+    result["version"] = f"IPv{ip_obj.version}"
 
-            result["findings"].append(
-                "Private IP address detected"
-            )
+    address_type = _classify_ip(ip_obj)
 
-        elif ip_obj.is_loopback:
+    result["address_type"] = address_type
+    result["is_public"] = address_type == "PUBLIC"
+    result["is_private"] = ip_obj.is_private
+    result["is_reserved"] = ip_obj.is_reserved
 
-            result["findings"].append(
-                "Loopback IP address detected"
-            )
+    # --------------------------------------------------------
+    # DOCUMENTATION IP
+    # --------------------------------------------------------
 
-        elif ip_obj.is_reserved:
+    if _is_documentation_ip(ip_obj):
 
-            result["findings"].append(
-                "Reserved IP address detected"
-            )
+        result["is_documentation"] = True
+        result["address_type"] = "DOCUMENTATION"
 
-        elif ip_obj.is_multicast:
+        result["findings"].append(
+            "Documentation/test IP detected. "
+            "This address should not be used for real-world geolocation."
+        )
 
-            result["findings"].append(
-                "Multicast IP address detected"
-            )
+        result["reputation"] = {
+            "status": "NOT_APPLICABLE",
+            "reputation": "TEST_ADDRESS",
+        }
+
+        result["confidence"] = "HIGH"
 
         return result
 
+    # --------------------------------------------------------
+    # NON-PUBLIC ADDRESS
+    # --------------------------------------------------------
 
-    # ---------------------------------------
-    # REVERSE DNS
-    # ---------------------------------------
-
-    hostname = reverse_dns(original_ip)
-
-    result["hostname"] = hostname
-
-
-    if hostname:
+    if not result["is_public"]:
 
         result["findings"].append(
-            f"Reverse DNS hostname resolved: {hostname}"
+            f"Address classified as {address_type.lower()} network infrastructure."
         )
 
+        result["reputation"] = {
+            "status": "NOT_APPLICABLE",
+            "reputation": "NOT_PUBLIC",
+        }
 
-    # ---------------------------------------
-    # GEOLOCATION
-    # ---------------------------------------
+        result["confidence"] = "HIGH"
 
-    geo = get_geolocation(original_ip)
+        return result
 
+    # --------------------------------------------------------
+    # REVERSE DNS
+    # --------------------------------------------------------
 
-    if geo:
+    reverse_dns = _reverse_dns(raw_ip)
 
-        result["country"] = geo.get(
-            "country"
-        ) or "Unknown"
+    result["reverse_dns"] = reverse_dns
 
-        result["country_code"] = geo.get(
-            "country_code"
+    if reverse_dns.get("status") == "FOUND":
+
+        hostname = reverse_dns.get("hostname")
+
+        result["infrastructure"] = _infrastructure_indicator(
+            hostname
         )
 
-        result["region"] = geo.get(
-            "region"
-        ) or "Unknown"
-
-        result["city"] = geo.get(
-            "city"
-        ) or "Unknown"
-
-        result["latitude"] = geo.get(
-            "latitude"
+        result["findings"].append(
+            f"Reverse DNS hostname identified: {hostname}"
         )
-
-        result["longitude"] = geo.get(
-            "longitude"
-        )
-
-        result["timezone"] = geo.get(
-            "timezone"
-        )
-
-        result["organization"] = geo.get(
-            "organization"
-        ) or "Unknown"
-
-        result["isp"] = geo.get(
-            "isp"
-        ) or "Unknown"
-
-        result["asn"] = geo.get(
-            "asn"
-        ) or "Unknown"
-
-        result["confidence"] += 20
 
     else:
 
         result["findings"].append(
-            "Geolocation information unavailable"
+            "No reverse DNS hostname identified."
         )
 
+    # --------------------------------------------------------
+    # ABUSEIPDB
+    # --------------------------------------------------------
 
-    # ---------------------------------------
-    # CLOUD / HOSTING DETECTION
-    # ---------------------------------------
+    abuse_data = _abuseipdb_lookup(raw_ip)
 
-    hosting = detect_cloud_or_hosting(
-        result["organization"],
-        result["isp"],
-        result["hostname"]
-    )
+    result["reputation"] = abuse_data
 
-    result["hosting"] = hosting
-
-
-    if hosting["detected"]:
-
-        providers = ", ".join(
-            hosting["providers"]
-        )
+    if abuse_data.get("reputation") == "MALICIOUS":
 
         result["findings"].append(
-            f"Possible cloud/hosting infrastructure: {providers}"
+            "IP has a high abuse confidence score."
         )
 
-
-    # ---------------------------------------
-    # ABUSEIPDB REPUTATION
-    # ---------------------------------------
-
-    reputation = check_abuseipdb(
-        original_ip
-    )
-
-    result["reputation"] = reputation
-
-
-    if reputation.get("status") == "MALICIOUS":
+    elif abuse_data.get("reputation") == "SUSPICIOUS":
 
         result["findings"].append(
-            "IP has a high malicious reputation score"
+            "IP has reported abuse activity."
         )
 
-        result["confidence"] += 20
-
-    elif reputation.get("status") == "SUSPICIOUS":
+    elif abuse_data.get("status") == "UNAVAILABLE":
 
         result["findings"].append(
-            "IP has suspicious reputation indicators"
+            "Live IP reputation unavailable."
         )
 
-        result["confidence"] += 10
+    # --------------------------------------------------------
+    # CONFIDENCE
+    # --------------------------------------------------------
 
+    if abuse_data.get("status") == "FOUND":
+        result["confidence"] = "HIGH"
 
-    # ---------------------------------------
-    # CONFIDENCE LIMIT
-    # ---------------------------------------
+    elif reverse_dns.get("status") == "FOUND":
+        result["confidence"] = "MEDIUM"
 
-    result["confidence"] = min(
-        result["confidence"],
-        100
-    )
-
+    else:
+        result["confidence"] = "LOW"
 
     return result
 
 
+# ============================================================
+# MAIN ENGINE
+# ============================================================
+
 def analyze_ips(ip_addresses):
-    """
-    Analyze multiple IP addresses extracted
-    from the email headers.
-    """
 
-    results = []
+    if not ip_addresses:
+        return {
+            "status": "NO_IPS",
+            "total": 0,
+            "public_count": 0,
+            "private_count": 0,
+            "documentation_count": 0,
+            "suspicious_count": 0,
+            "results": [],
+            "findings": [
+                "No IP addresses were extracted from the email."
+            ],
+            "engine": {
+                "name": "TARVEX26 IP Intelligence Engine",
+                "version": "1.0",
+                "reputation_source": (
+                    "AbuseIPDB"
+                    if ABUSEIPDB_API_KEY
+                    else "Not configured"
+                ),
+            },
+        }
 
-    seen = set()
+    # Remove duplicates while preserving order
+    unique_ips = []
 
     for ip in ip_addresses:
 
         ip = str(ip).strip()
 
-        if not ip:
-            continue
+        if ip and ip not in unique_ips:
+            unique_ips.append(ip)
 
-        if ip in seen:
-            continue
+    results = []
 
-        seen.add(ip)
+    for ip in unique_ips:
 
         results.append(
-            analyze_ip(ip)
+            _analyze_single_ip(ip)
         )
 
+    public_count = sum(
+        1 for item in results
+        if item["is_public"]
+    )
+
+    private_count = sum(
+        1 for item in results
+        if item["is_private"]
+    )
+
+    documentation_count = sum(
+        1 for item in results
+        if item["is_documentation"]
+    )
+
+    suspicious_count = sum(
+        1
+        for item in results
+        if item.get("reputation", {}).get("reputation")
+        in {"MALICIOUS", "SUSPICIOUS"}
+    )
+
+    findings = []
+
+    for item in results:
+
+        for finding in item.get("findings", []):
+
+            findings.append(
+                f"{item['ip']}: {finding}"
+            )
 
     return {
-        "total_ips": len(results),
+        "status": "ANALYZED",
+        "total": len(results),
+        "public_count": public_count,
+        "private_count": private_count,
+        "documentation_count": documentation_count,
+        "suspicious_count": suspicious_count,
         "results": results,
-
-        "public_ip_count": sum(
-            1
-            for item in results
-            if item.get("is_global")
-        ),
-
-        "private_ip_count": sum(
-            1
-            for item in results
-            if item.get("is_private")
-        ),
-
-        "suspicious_ip_count": sum(
-            1
-            for item in results
-            if item.get("reputation", {}).get("status")
-            in ["MALICIOUS", "SUSPICIOUS"]
-        ),
-
+        "findings": list(dict.fromkeys(findings)),
         "engine": {
             "name": "TARVEX26 IP Intelligence Engine",
-            "version": "2.0",
+            "version": "1.0",
             "capabilities": [
-                "IP classification",
-                "Reverse DNS",
-                "Geolocation",
-                "ISP identification",
-                "Organization identification",
-                "ASN identification",
-                "Cloud/hosting detection",
-                "IP reputation analysis"
-            ]
-        }
+                "IPv4/IPv6 validation",
+                "Public/private classification",
+                "Reserved address detection",
+                "Documentation/test network detection",
+                "Reverse DNS analysis",
+                "Infrastructure heuristics",
+                "Optional live reputation lookup",
+            ],
+            "reputation_source": (
+                "AbuseIPDB"
+                if ABUSEIPDB_API_KEY
+                else "Not configured"
+            ),
+            "note": (
+                "Reputation is marked UNKNOWN/UNAVAILABLE when "
+                "a live reputation source is not configured."
+            ),
+        },
     }
