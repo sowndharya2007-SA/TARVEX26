@@ -1,29 +1,49 @@
-From: Security Alert <security-alert@secure-example.com>
-To: analyst@example.com
+Return-Path: <alerts@secure-example.com>
+Received: from mail.secure-example.com (203.0.113.25)
+    by mx.target-example.com with ESMTP;
+    Mon, 21 Sep 2026 09:30:00 +0000
+Received: from workstation.secure-example.com (192.0.2.44)
+    by mail.secure-example.com with ESMTP;
+    Mon, 21 Sep 2026 09:29:40 +0000
+From: Security Team <alerts@secure-example.com>
+To: victim@target-example.com
+Reply-To: support@secure-example.net
 Subject: Urgent Account Verification Required
-Date: Sat, 19 Sep 2026 18:30:00 +0530
-Reply-To: verify-account@secure-example.net
-Return-Path: <bounce@secure-example.net>
-Message-ID: <alert-20260919-001@secure-example.com>
-Received: from mail.secure-example.com (mail.secure-example.com [203.0.113.45])
-    by mail.example.com with ESMTPS id ABC123
-    for <analyst@example.com>; Sat, 19 Sep 2026 18:29:55 +0530
-Authentication-Results: mail.example.com;
-    spf=fail smtp.mailfrom=secure-example.net;
+Date: Mon, 21 Sep 2026 09:29:30 +0000
+Message-ID: <20260921092930.12345@secure-example.com>
+Authentication-Results: mx.target-example.com;
+    spf=fail smtp.mailfrom=secure-example.com;
     dkim=fail header.d=secure-example.com;
     dmarc=fail header.from=secure-example.com
+Received-SPF: fail (mx.target-example.com: domain of alerts@secure-example.com does not designate 203.0.113.25 as permitted sender)
+DKIM-Signature: v=1; a=rsa-sha256; d=secure-example.com; s=mail;
+    h=from:to:subject:date:message-id;
+    bh=INVALIDTESTHASH;
+    b=INVALIDTESTSIGNATURE
 
 MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="BOUNDARY123"
+
+--BOUNDARY123
 Content-Type: text/plain; charset="UTF-8"
 
-URGENT: Your account requires immediate verification.
+URGENT ACTION REQUIRED
 
-Your account may be suspended unless you verify your identity immediately.
+Your account has been flagged for security verification.
 
-Click the verification link below:
-https://secure-example.net/verify
+Please verify your account immediately using the following link:
 
-Failure to complete verification within 24 hours may result in account restriction.
+http://verify-secure-example.com/login
 
-Regards,
-Security Team
+Failure to verify your account within 30 minutes may result in account suspension.
+
+Please keep this confidential and do not share this message.
+
+--BOUNDARY123
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="invoice.pdf.exe"
+Content-Transfer-Encoding: base64
+
+VGhpcyBpcyBhIHRlc3QgYXR0YWNobWVudC4=
+
+--BOUNDARY123--
