@@ -1,0 +1,29 @@
+@"
+From: security@secure-example.com
+To: victim@target-example.com
+Subject: URGENT: Security Verification Required
+Date: Wed, 23 Sep 2026 11:30:00 +0530
+Message-ID: <origin-demo-20260923@secure-example.com>
+Return-Path: <security@secure-example.com>
+Reply-To: verification@secure-example.net
+Received: from mail.secure-example.com (8.8.8.8)
+    by mx.target-example.com with ESMTP;
+    Wed, 23 Sep 2026 11:30:00 +0530
+Authentication-Results: mx.target-example.com;
+    spf=fail smtp.mailfrom=secure-example.com;
+    dkim=fail header.d=secure-example.com;
+    dmarc=fail header.from=secure-example.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+URGENT SECURITY ALERT
+
+Your account requires immediate verification.
+
+Please verify your account using the following link:
+http://verify-secure-example.com/login
+
+Do not share this message with anyone.
+
+This is a controlled TARVEX26 demonstration email.
+"@ | Set-Content ..\data\forensic_origin_test.eml

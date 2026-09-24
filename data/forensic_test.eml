@@ -1,28 +1,13 @@
-Return-Path: <alerts@secure-example.com>
-Received: from mail.secure-example.com (203.0.113.25)
-    by mx.target-example.com with ESMTP;
-    Mon, 21 Sep 2026 09:30:00 +0000
-Received: from workstation.secure-example.com (192.0.2.44)
-    by mail.secure-example.com with ESMTP;
-    Mon, 21 Sep 2026 09:29:40 +0000
-From: Security Team <alerts@secure-example.com>
+From: security@secure-example.com
 To: victim@target-example.com
-Reply-To: support@secure-example.net
-Subject: Urgent Account Verification Required
-Date: Mon, 21 Sep 2026 09:29:30 +0000
-Message-ID: <20260921092930.12345@secure-example.com>
-Authentication-Results: mx.target-example.com;
-    spf=fail smtp.mailfrom=secure-example.com;
-    dkim=fail header.d=secure-example.com;
-    dmarc=fail header.from=secure-example.com
-Received-SPF: fail (mx.target-example.com: domain of alerts@secure-example.com does not designate 203.0.113.25 as permitted sender)
-DKIM-Signature: v=1; a=rsa-sha256; d=secure-example.com; s=mail;
-    h=from:to:subject:date:message-id;
-    bh=INVALIDTESTHASH;
-    b=INVALIDTESTSIGNATURE
-
+Subject: URGENT: Account Security Verification Required
+Date: Mon, 21 Sep 2026 09:30:00 +0000
+Message-ID: <202609210930.12345@secure-example.com>
+Reply-To: verification@secure-example.net
+Return-Path: <security@secure-example.com>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="BOUNDARY123"
+Authentication-Results: mx.target-example.com; spf=fail smtp.mailfrom=secure-example.com; dkim=fail header.d=secure-example.com; dmarc=fail header.from=secure-example.com
 
 --BOUNDARY123
 Content-Type: text/plain; charset="UTF-8"
@@ -44,6 +29,6 @@ Content-Type: application/octet-stream
 Content-Disposition: attachment; filename="invoice.pdf.exe"
 Content-Transfer-Encoding: base64
 
-VGhpcyBpcyBhIHRlc3QgYXR0YWNobWVudC4=
+VGhpcyBpcyBhIHRlc3QgYXR0YWNobWVudCBmb3IgVEFSVkVYMjY=
 
 --BOUNDARY123--

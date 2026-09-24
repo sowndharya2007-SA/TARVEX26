@@ -6035,3 +6035,210 @@ code {
     font-size: 24px;
   }
 }
+/* TARVEX26 - Final Upload Button Alignment */
+.analyze-button {
+  display: block !important;
+  width: 250px !important;
+  margin: 24px auto 0 !important;
+  text-align: center !important;
+  box-sizing: border-box;
+}
+/* =========================================================
+   TARVEX26 - DIGITAL EVIDENCE
+   ========================================================= */
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.intel-card {
+  background: rgba(5, 14, 24, 0.85);
+  border: 1px solid rgba(0, 220, 255, 0.18);
+  border-radius: 14px;
+  padding: 22px;
+  min-height: 105px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.intel-card strong {
+  color: #e8faff;
+  font-size: 16px;
+  word-break: break-word;
+}
+
+.card-label {
+  display: block;
+  color: #718397;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.status-success {
+  color: #22e6a7 !important;
+}
+
+.evidence-panel {
+  background: rgba(4, 12, 22, 0.82);
+  border: 1px solid rgba(0, 220, 255, 0.16);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 18px;
+}
+
+.panel-title {
+  color: #00dfff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.hash-box {
+  background: #020911;
+  border: 1px solid rgba(0, 220, 255, 0.2);
+  border-radius: 10px;
+  padding: 18px;
+  overflow-x: auto;
+}
+
+.hash-box span {
+  color: #9defff;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+.panel-description {
+  color: #718397;
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 15px;
+}
+
+.custody-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.custody-status > div {
+  background: #020911;
+  border-radius: 10px;
+  padding: 18px;
+  border: 1px solid rgba(0, 220, 255, 0.12);
+}
+
+.custody-status strong {
+  display: block;
+  font-size: 17px;
+}
+
+.custody-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.custody-event {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  padding: 15px;
+  background: #020911;
+  border-radius: 10px;
+  border-left: 2px solid #00dfff;
+}
+
+.timeline-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22e6a7;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.custody-event strong {
+  display: block;
+  color: #dffaff;
+  font-size: 13px;
+}
+
+.custody-event span {
+  display: block;
+  color: #66788a;
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.custody-empty {
+  border: 1px solid rgba(34, 230, 167, 0.2);
+  background: rgba(34, 230, 167, 0.04);
+  color: #22e6a7;
+  border-radius: 10px;
+  padding: 18px;
+  font-size: 13px;
+}
+
+.custody-empty span {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.preservation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preservation-list > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #020911;
+  border-radius: 9px;
+  padding: 15px 18px;
+}
+
+.preservation-list span {
+  color: #7b8da0;
+  font-size: 12px;
+}
+
+.preservation-list strong {
+  color: #22e6a7;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 800px) {
+  .evidence-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .custody-status {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence-panel {
+    padding: 17px;
+  }
+}

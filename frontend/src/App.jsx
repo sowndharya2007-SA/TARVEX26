@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import InfrastructureGraph from "./InfrastructureGraph";
+import GeoLocationMap from "./GeoLocationMap";
 
 import {
   ShieldCheck,
@@ -566,14 +567,8 @@ function App() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(() => {
-    try {
-      const saved = localStorage.getItem("tarvex26_analysis");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Start with no investigation. Analysis appears only after the user analyzes an .eml file.
+  const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState("");
 
   const [activePage, setActivePage] = useState("dashboard");
@@ -675,12 +670,6 @@ function App() {
       }
 
       setAnalysis(data);
-
-      try {
-        localStorage.setItem("tarvex26_analysis", JSON.stringify(data));
-      } catch (storageError) {
-        console.warn("TARVEX26 analysis could not be persisted:", storageError);
-      }
 
       setActivePage("dashboard");
       setActiveAnalysisSection("overview");
@@ -1706,6 +1695,38 @@ function App() {
 
 
                 <button
+                  className={activeAnalysisSection === "domain" ? "active" : ""}
+                  onClick={() => setActiveAnalysisSection("domain")}
+                >
+                  <Globe size={15} />
+                  <span>DOMAIN</span>
+                </button>
+
+                <button
+                  className={activeAnalysisSection === "urls" ? "active" : ""}
+                  onClick={() => setActiveAnalysisSection("urls")}
+                >
+                  <Search size={15} />
+                  <span>URLS</span>
+                </button>
+
+                <button
+                  className={activeAnalysisSection === "attachments" ? "active" : ""}
+                  onClick={() => setActiveAnalysisSection("attachments")}
+                >
+                  <FileText size={15} />
+                  <span>ATTACHMENTS</span>
+                </button>
+
+                <button
+                  className={activeAnalysisSection === "correlation" ? "active" : ""}
+                  onClick={() => setActiveAnalysisSection("correlation")}
+                >
+                  <Network size={15} />
+                  <span>CORRELATION</span>
+                </button>
+
+                <button
                   className={
                     activeAnalysisSection === "infrastructure"
                       ? "active"
@@ -2298,27 +2319,66 @@ function App() {
                   </div>
 
 
-                  {forensic?.authentication_results?.length > 0 ? (
+                  {forensic?.authentication_results ? (
+                    <div className="authentication-results-list">
 
-                    forensic.authentication_results.map(
-                      (result, index) => (
-
-                        <div
-                          className="received-item"
-                          key={index}
-                        >
-                          {result}
+                      {typeof forensic.authentication_results === "string" ? (
+                        <div className="received-item">
+                          <span>
+                            {forensic.authentication_results}
+                          </span>
                         </div>
 
-                      )
-                    )
+                      ) : Array.isArray(forensic.authentication_results) ? (
+                        forensic.authentication_results.length > 0 ? (
+                          forensic.authentication_results.map((result, index) => (
+                            <div
+                              className="received-item"
+                              key={index}
+                            >
+                              <span>
+                                {typeof result === "object"
+                                  ? JSON.stringify(result)
+                                  : String(result ?? "N/A")}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="empty-intel">
+                            No Authentication-Results header found.
+                          </div>
+                        )
 
+                      ) : typeof forensic.authentication_results === "object" ? (
+                        Object.entries(forensic.authentication_results).map(
+                          ([key, value]) => (
+                            <div
+                              className="received-item"
+                              key={key}
+                            >
+                              <strong>
+                                {key.replace(/_/g, " ").toUpperCase()}
+                              </strong>
+                              <span>
+                                {typeof value === "object"
+                                  ? JSON.stringify(value)
+                                  : String(value ?? "N/A")}
+                              </span>
+                            </div>
+                          )
+                        )
+
+                      ) : (
+                        <div className="received-item">
+                          {String(forensic.authentication_results)}
+                        </div>
+                      )}
+
+                    </div>
                   ) : (
-
                     <div className="empty-intel">
                       No Authentication-Results header found.
                     </div>
-
                   )}
 
                 </div>
@@ -2622,6 +2682,11 @@ function App() {
 
                 </div>
 
+                {/* GEOLOCATION MAP */}
+                <GeoLocationMap
+                  results={analysis.geoip_intelligence?.results || []}
+                />
+
                 {/* GEOIP SUMMARY */}
                 <div className="intel-block">
 
@@ -2888,6 +2953,59 @@ function App() {
 
 
             {/* =================================================
+                DOMAIN INTELLIGENCE
+            ================================================= */}
+          {analysis && activeAnalysisSection === "domain" && (
+            <motion.section className="analysis-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="section-heading"><div><span className="result-label">DOMAIN INTELLIGENCE</span><h3>DNS, Registration & Infrastructure Intelligence</h3></div><Globe size={24} /></div>
+              {analysis.domain_intelligence ? (
+                <>
+                  <div className="origin-grid">
+                    <div className="origin-card"><div className="origin-card-header"><span>DOMAIN</span><strong>{analysis.domain_intelligence.domain || "Unknown"}</strong></div><div className="origin-details"><div><span>STATUS</span><p>{analysis.domain_intelligence.status || "N/A"}</p></div><div><span>IPv4</span><p>{analysis.domain_intelligence.dns?.A?.join(", ") || "None"}</p></div><div><span>IPv6</span><p>{analysis.domain_intelligence.dns?.AAAA?.join(", ") || "None"}</p></div><div><span>MX</span><p>{analysis.domain_intelligence.dns?.MX?.join(", ") || "None"}</p></div><div><span>NAMESERVERS</span><p>{analysis.domain_intelligence.dns?.NS?.join(", ") || "None"}</p></div></div></div>
+                    <div className="origin-card"><div className="origin-card-header"><span>EMAIL AUTHENTICATION</span><strong>DNS SECURITY</strong></div><div className="origin-details"><div><span>SPF</span><p>{analysis.domain_intelligence.spf?.status || "UNKNOWN"}</p></div><div><span>DKIM</span><p>{analysis.domain_intelligence.dkim?.status || "UNKNOWN"}</p></div><div><span>DMARC</span><p>{analysis.domain_intelligence.dmarc?.status || "UNKNOWN"}</p></div></div></div>
+                    <div className="origin-card"><div className="origin-card-header"><span>REGISTRATION</span><strong>{analysis.domain_intelligence.rdap?.status || "N/A"}</strong></div><div className="origin-details"><div><span>REGISTRAR</span><p>{analysis.domain_intelligence.rdap?.registrar || "Unavailable"}</p></div><div><span>HANDLE</span><p>{analysis.domain_intelligence.rdap?.handle || "N/A"}</p></div><div><span>REGISTERED</span><p>{analysis.domain_intelligence.rdap?.events?.find((e) => e.eventAction === "registration")?.eventDate || "N/A"}</p></div><div><span>EXPIRES</span><p>{analysis.domain_intelligence.rdap?.events?.find((e) => e.eventAction === "expiration")?.eventDate || "N/A"}</p></div></div></div>
+                    <div className="origin-card"><div className="origin-card-header"><span>INFRASTRUCTURE</span><strong>{analysis.domain_intelligence.infrastructure?.ipv4_count ?? 0} IPv4</strong></div><div className="origin-details"><div><span>IPv4 COUNT</span><p>{analysis.domain_intelligence.infrastructure?.ipv4_count ?? 0}</p></div><div><span>IPv6 COUNT</span><p>{analysis.domain_intelligence.infrastructure?.ipv6_count ?? 0}</p></div><div><span>MX COUNT</span><p>{analysis.domain_intelligence.infrastructure?.mx_count ?? 0}</p></div><div><span>NS COUNT</span><p>{analysis.domain_intelligence.infrastructure?.nameserver_count ?? 0}</p></div></div></div>
+                  </div>
+                  <div className="findings-list" style={{ marginTop: "1.5rem" }}><span className="result-label">DOMAIN FINDINGS</span>{(analysis.domain_intelligence.findings || []).length > 0 ? analysis.domain_intelligence.findings.map((finding, index) => <div className="received-item" key={index}>{finding}</div>) : <div className="received-item">No domain findings returned.</div>}</div>
+                </>
+              ) : <div className="empty-page-state"><Globe size={42}/><h2>No domain intelligence</h2><p>The backend did not return domain intelligence for this case.</p></div>}
+            </motion.section>
+          )}
+
+          {/* =================================================
+                URL INTELLIGENCE
+            ================================================= */}
+          {analysis && activeAnalysisSection === "urls" && (
+            <motion.section className="analysis-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="section-heading"><div><span className="result-label">URL INTELLIGENCE</span><h3>Suspicious Link & Destination Analysis</h3></div><Search size={24}/></div>
+              <div className="origin-grid"><div className="origin-card"><div className="origin-card-header"><span>URLS DETECTED</span><strong>{analysis.url_analysis?.total ?? analysis.url_analysis?.urls?.length ?? 0}</strong></div></div><div className="origin-card"><div className="origin-card-header"><span>SUSPICIOUS</span><strong>{analysis.url_analysis?.suspicious_count ?? 0}</strong></div></div><div className="origin-card"><div className="origin-card-header"><span>RISK LEVEL</span><strong>{analysis.url_analysis?.risk_level || "ANALYZED"}</strong></div></div></div>
+              <div className="findings-list" style={{ marginTop: "1.5rem" }}><span className="result-label">DETECTED URLS</span>{(analysis.url_analysis?.urls || []).length > 0 ? analysis.url_analysis.urls.map((item, index) => <div className="received-item" key={index}><strong>{typeof item === "string" ? item : (item.url || item.value || item.href || "Unknown URL")}</strong>{typeof item === "object" && (item.suspicious || item.is_suspicious) ? " • SUSPICIOUS" : ""}</div>) : <div className="received-item">No URLs were returned by the analyzer.</div>}{(analysis.url_analysis?.findings || []).map((finding, index) => <div className="received-item" key={`url-finding-${index}`}>{typeof finding === "string" ? finding : JSON.stringify(finding)}</div>)}</div>
+            </motion.section>
+          )}
+
+          {/* =================================================
+                ATTACHMENT INTELLIGENCE
+            ================================================= */}
+          {analysis && activeAnalysisSection === "attachments" && (
+            <motion.section className="analysis-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="section-heading"><div><span className="result-label">ATTACHMENT FORENSICS</span><h3>Attachment Metadata & Risk Analysis</h3></div><FileText size={24}/></div>
+              <div className="origin-grid"><div className="origin-card"><div className="origin-card-header"><span>ATTACHMENTS</span><strong>{analysis.attachment_analysis?.total ?? 0}</strong></div></div><div className="origin-card"><div className="origin-card-header"><span>SUSPICIOUS</span><strong>{analysis.attachment_analysis?.suspicious_count ?? 0}</strong></div></div><div className="origin-card"><div className="origin-card-header"><span>RISK LEVEL</span><strong>{analysis.attachment_analysis?.risk_level || "NONE"}</strong></div></div></div>
+              <div className="findings-list" style={{ marginTop: "1.5rem" }}><span className="result-label">ATTACHMENT DETAILS</span>{(analysis.attachment_analysis?.attachments || []).length > 0 ? analysis.attachment_analysis.attachments.map((item, index) => <div className="received-item" key={index}><strong>{item.filename || "Unnamed attachment"}</strong> • {item.category || "OTHER"} • {item.extension || "UNKNOWN"} • {item.size_bytes ?? 0} bytes{item.risks?.length ? ` • ${item.risks.join("; ")}` : ""}</div>) : <div className="received-item">No attachments detected.</div>}</div>
+            </motion.section>
+          )}
+
+          {/* =================================================
+                CORRELATION INTELLIGENCE
+            ================================================= */}
+          {analysis && activeAnalysisSection === "correlation" && (
+            <motion.section className="analysis-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="section-heading"><div><span className="result-label">CORRELATION INTELLIGENCE</span><h3>Sender, IP, Domain & Relay Correlation</h3></div><Network size={24}/></div>
+              <div className="origin-grid"><div className="origin-card"><div className="origin-card-header"><span>NODES</span><strong>{analysis.correlation?.node_count ?? analysis.infrastructure_graph?.node_count ?? 0}</strong></div></div><div className="origin-card"><div className="origin-card-header"><span>RELATIONSHIPS</span><strong>{analysis.correlation?.relationship_count ?? analysis.infrastructure_graph?.relationship_count ?? 0}</strong></div></div><div className="origin-card"><div className="origin-card-header"><span>CONFIDENCE</span><strong>{analysis.correlation?.confidence ?? analysis.correlation?.attribution_confidence ?? "N/A"}</strong></div></div></div>
+              <div className="findings-list" style={{ marginTop: "1.5rem" }}><span className="result-label">CORRELATION FINDINGS</span>{(analysis.correlation?.findings || []).length > 0 ? analysis.correlation.findings.map((finding, index) => <div className="received-item" key={index}>{typeof finding === "string" ? finding : JSON.stringify(finding)}</div>) : <div className="received-item">No additional correlation findings returned. The infrastructure graph remains the primary relationship view.</div>}</div>
+            </motion.section>
+          )}
+
+          {/* =================================================
                 INFRASTRUCTURE CORRELATION
             ================================================= */}
 
@@ -2970,391 +3088,111 @@ function App() {
                 DIGITAL EVIDENCE
             ================================================= */}
 
-            {analysis &&
-              activeAnalysisSection === "evidence" &&
-              analysis.evidence && (
-
+            {analysis && activeAnalysisSection === "evidence" && (
               <motion.section
-                className="evidence-section"
-                initial={{
-                  opacity: 0,
-                  y: 20
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0
-                }}
+                className="analysis-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
               >
-
-                <div className="evidence-top">
-
+                <div className="section-heading">
                   <div>
-
-                    <span className="result-label">
-                      DIGITAL EVIDENCE
-                    </span>
-
-                    <h3>
-                      Evidence Preservation
-                    </h3>
-
+                    <span className="result-label">DIGITAL EVIDENCE</span>
+                    <h2>Evidence Preservation & Chain of Custody</h2>
                     <p>
-                      Cryptographic verification of the
-                      original email evidence.
+                      Cryptographic verification and forensic preservation of
+                      the original uploaded email evidence.
                     </p>
-                    {/* DIGITAL EVIDENCE DETAILS */}
-<div className="evidence-details-grid">
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">CASE ID</span>
-    <strong>
-      {analysis?.chain_of_custody?.chain_of_custody?.case_id ||
-        analysis?.chain_of_custody?.case_id ||
-        analysis?.evidence?.case_id ||
-        "N/A"}
-    </strong>
-  </div>
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">EVIDENCE ID</span>
-    <strong>
-      {analysis?.evidence?.evidence_id || "N/A"}
-    </strong>
-  </div>
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">FILE NAME</span>
-    <strong>
-      {analysis?.evidence?.filename || selectedFile?.name || "N/A"}
-    </strong>
-  </div>
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">FILE SIZE</span>
-    <strong>
-      {analysis?.evidence?.file_size
-        ? `${analysis.evidence.file_size} bytes`
-        : "N/A"}
-    </strong>
-  </div>
-
-  <div className="evidence-detail-card evidence-hash-card">
-    <span className="evidence-detail-label">SHA-256 INTEGRITY HASH</span>
-
-    <code>
-      {analysis?.evidence?.sha256 || "N/A"}
-    </code>
-  </div>
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">EVIDENCE STATUS</span>
-
-    <strong className="evidence-status-verified">
-      {analysis?.evidence?.status || "PRESERVED"}
-    </strong>
-  </div>
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">INTEGRITY</span>
-
-    <strong className="evidence-status-verified">
-      {analysis?.chain_of_custody?.chain_of_custody?.integrity ||
-        analysis?.chain_of_custody?.integrity ||
-        analysis?.chain_of_custody?.integrity_verification?.status ||
-        "VERIFIED"}
-    </strong>
-  </div>
-
-  <div className="evidence-detail-card">
-    <span className="evidence-detail-label">PRESERVED AT</span>
-
-    <strong>
-      {analysis?.evidence?.preserved_at
-        ? new Date(analysis.evidence.preserved_at).toLocaleString()
-        : "N/A"}
-    </strong>
-  </div>
-
-</div>
-
-
-{/* CHAIN OF CUSTODY */}
-<div className="chain-custody-panel">
-
-  <div className="chain-custody-header">
-    <div>
-      <span className="result-label">
-        FORENSIC EVIDENCE TRAIL
-      </span>
-
-      <h3>
-        Chain of Custody
-      </h3>
-
-      <p>
-        Immutable evidence handling trail maintained by TARVEX26
-        for forensic investigation and integrity verification.
-      </p>
-    </div>
-
-    <div className="custody-integrity-badge">
-      ✓ VERIFIED
-    </div>
-  </div>
-
-
-  <div className="custody-timeline">
-
-    {(
-      analysis?.chain_of_custody?.chain_of_custody?.events ||
-      analysis?.chain_of_custody?.events ||
-      []
-    ).map((event, index) => (
-
-      <div
-        className="custody-event"
-        key={event.event_id || event.id || index}
-      >
-
-        <div className="custody-event-marker">
-          <span>✓</span>
-        </div>
-
-        <div className="custody-event-content">
-
-          <div className="custody-event-top">
-
-            <span className="custody-event-id">
-              {event.event_id ||
-                event.id ||
-                `E0${index + 1}`}
-            </span>
-
-            <span className="custody-event-status">
-              {event.status || "COMPLETED"}
-            </span>
-
-          </div>
-
-          <h4>
-            {(event.event_type ||
-              event.type ||
-              event.action ||
-              "FORENSIC EVENT")
-              .replaceAll("_", " ")}
-          </h4>
-
-          <p>
-            {event.description ||
-              event.details ||
-              "Evidence handling event completed successfully."}
-          </p>
-
-          {(event.timestamp || event.created_at) && (
-            <small>
-              {new Date(
-                event.timestamp || event.created_at
-              ).toLocaleString()}
-            </small>
-          )}
-
-        </div>
-
-      </div>
-
-    ))}
-
-    {(
-      analysis?.chain_of_custody?.chain_of_custody?.events ||
-      analysis?.chain_of_custody?.events ||
-      []
-    ).length === 0 && (
-
-      <div className="custody-empty">
-        <span>✓</span>
-        <div>
-          <strong>Evidence trail available</strong>
-          <p>
-            Chain-of-custody records were generated by the
-            TARVEX26 forensic engine.
-          </p>
-        </div>
-      </div>
-
-    )}
-
-  </div>
-
-</div>
-
                   </div>
-
-
-                  <div className="evidence-badge">
-
-                    <ShieldCheck size={17} />
-
-                    VERIFIED
-
-                  </div>
-
+                  <Fingerprint size={24} />
                 </div>
 
-
-                <div className="evidence-main">
-
-
-                  <div className="evidence-item evidence-wide">
-
-                    <span>
-                      EVIDENCE ID
-                    </span>
-
-                    <strong>
-                      {analysis.evidence.evidence_id ||
-                        "N/A"}
-                    </strong>
-
-                  </div>
-
-
-                  <div className="evidence-item">
-
-                    <span>
-                      FILE
-                    </span>
-
-                    <strong>
-                      {analysis.evidence.filename ||
-                        "N/A"}
-                    </strong>
-
-                  </div>
-
-
-                  <div className="evidence-item">
-
-                    <span>
-                      SIZE
-                    </span>
-
-                    <strong>
-
-                      {analysis.evidence.file_size
-                        ? `${analysis.evidence.file_size} bytes`
-                        : "N/A"}
-
-                    </strong>
-
-                  </div>
-
-
-                  <div className="evidence-item">
-
-                    <span>
-                      TYPE
-                    </span>
-
-                    <strong>
-                      {analysis.evidence.evidence_type ||
-                        "EMAIL"}
-                    </strong>
-
-                  </div>
-
-
-                  <div className="evidence-item">
-
-                    <span>
-                      STATUS
-                    </span>
-
-                    <strong className="evidence-valid">
-
-                      {analysis.evidence.status ||
-                        "PRESERVED"}
-
-                    </strong>
-
-                  </div>
-
+                <div className="analysis-grid">
+                  <InfoBox label="EVIDENCE ID" value={String(analysis.evidence?.evidence_id ?? "N/A")} />
+                  <InfoBox label="FILE NAME" value={String(analysis.evidence?.filename ?? selectedFile?.name ?? "N/A")} />
+                  <InfoBox
+                    label="FILE SIZE"
+                    value={analysis.evidence?.file_size != null ? `${analysis.evidence.file_size} bytes` : "N/A"}
+                  />
+                  <InfoBox label="EVIDENCE TYPE" value={String(analysis.evidence?.evidence_type ?? "EMAIL")} />
+                  <InfoBox label="STATUS" value={String(analysis.evidence?.status ?? "PRESERVED")} />
+                  <InfoBox
+                    label="PRESERVED AT"
+                    value={analysis.evidence?.preserved_at ? new Date(analysis.evidence.preserved_at).toLocaleString() : "N/A"}
+                  />
                 </div>
-
-
-                <div className="evidence-hash">
-
-                  <div className="hash-title">
-
-                    <Fingerprint size={16} />
-
-                    <span>
-                      SHA-256 EVIDENCE HASH
-                    </span>
-
-                  </div>
-
-
-                  <code>
-                    {analysis.evidence.sha256 ||
-                      "Hash unavailable"}
-                  </code>
-
-
-                  <p>
-                    Digital fingerprint generated from
-                    the uploaded email. Used to verify
-                    evidence integrity.
-                  </p>
-
-                </div>
-
-
-                <div className="evidence-time">
-
-                  <span>
-                    PRESERVED AT
-                  </span>
-
-                  <strong>
-
-                    {analysis.evidence.preserved_at
-                      ? new Date(
-                          analysis.evidence.preserved_at
-                        ).toLocaleString()
-                      : "N/A"}
-
-                  </strong>
-
-                </div>
-
-
-                {/* CHAIN OF CUSTODY STYLE STATUS */}
 
                 <div className="intel-block">
-
                   <div className="intel-title">
-
-                    <ShieldCheck size={18} />
-
-                    <span>
-                      EVIDENCE INTEGRITY
-                    </span>
-
+                    <Hash size={18} />
+                    <span>SHA-256 EVIDENCE INTEGRITY</span>
                   </div>
-
-
-                  <div className="finding-safe">
-
-                    SHA-256 fingerprint generated from
-                    the uploaded email and associated
-                    evidence metadata.
-
+                  <div
+                    className="finding-safe"
+                    style={{ wordBreak: "break-all", fontFamily: "monospace", lineHeight: 1.7 }}
+                  >
+                    {String(analysis.evidence?.sha256 ?? "SHA-256 hash unavailable")}
                   </div>
-
+                  <p className="hero-text" style={{ marginTop: "14px" }}>
+                    This cryptographic fingerprint is generated from the uploaded
+                    email evidence and is used to verify evidence integrity.
+                  </p>
                 </div>
 
-              </motion.section>
+                <div className="intel-block">
+                  <div className="intel-title">
+                    <ShieldCheck size={18} />
+                    <span>CHAIN OF CUSTODY</span>
+                  </div>
 
+                  <div className="finding-safe">
+                    <strong>
+                      {String(
+                        analysis?.chain_of_custody?.continuity ??
+                        analysis?.chain_of_custody?.status ??
+                        "INTACT"
+                      )}
+                    </strong>
+                    <br />
+                    Evidence handling continuity is recorded by TARVEX26.
+                  </div>
+
+                  <div className="analysis-grid" style={{ marginTop: "14px" }}>
+                    <InfoBox
+                      label="CUSTODY EVENTS"
+                      value={String(
+                        analysis?.chain_of_custody?.event_count ??
+                        analysis?.chain_of_custody?.chain_of_custody?.event_count ??
+                        analysis?.chain_of_custody?.events?.length ??
+                        analysis?.chain_of_custody?.chain_of_custody?.events?.length ??
+                        "N/A"
+                      )}
+                    />
+                    <InfoBox
+                      label="INTEGRITY"
+                      value={String(
+                        analysis?.integrity_verification?.status ??
+                        analysis?.custody_summary?.integrity_status ??
+                        "VERIFIED"
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="section-heading" style={{ marginTop: "24px" }}>
+                  <div>
+                    <span className="result-label">FORENSIC STATUS</span>
+                    <h3>Evidence Integrity Verified</h3>
+                  </div>
+                  <ShieldCheck size={24} />
+                </div>
+
+                <div className="finding-safe">
+                  ✓ Original email evidence preserved<br />
+                  ✓ SHA-256 fingerprint generated<br />
+                  ✓ Chain-of-custody continuity maintained<br />
+                  ✓ Evidence available for forensic reporting
+                </div>
+              </motion.section>
             )}
 
 

@@ -1,59 +1,67 @@
 """
 TARVEX26
 URL Intelligence Engine
-SIH26106 - Email Forensics
+SIH26106 - Email Threat Detection, GeoLocation and Forensic Intelligence
 
-Analyzes URLs found inside email content for:
-- Suspicious domains
-- Raw IP URLs
-- HTTPS usage
-- Phishing paths
-- URL obfuscation
+Analyzes URLs extracted from email content for:
+- Suspicious schemes
+- Credential/login paths
+- Verification/urgent language
+- Raw IP destinations
+- Obfuscation
+- Suspicious domain patterns
+- Redirect indicators
 - Excessive URL length
-- Suspicious keywords
-- Embedded credentials
-- URL shorteners
 """
 
 import re
-import ipaddress
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse
 
 
-SUSPICIOUS_DOMAIN_KEYWORDS = [
+SUSPICIOUS_PATH_KEYWORDS = {
+    "login",
+    "signin",
+    "sign-in",
     "verify",
     "verification",
+    "account",
+    "password",
+    "credential",
     "secure",
     "security",
-    "account",
-    "login",
-    "signin",
-    "support",
+    "confirm",
     "update",
-    "confirm",
-    "payment",
-    "invoice",
+    "authenticate",
     "wallet",
-    "password",
-    "alert",
-]
+    "payment",
+}
 
-SUSPICIOUS_PATH_KEYWORDS = [
-    "login",
-    "signin",
+SUSPICIOUS_DOMAIN_KEYWORDS = {
     "verify",
-    "verification",
+    "secure",
     "account",
-    "password",
-    "payment",
-    "invoice",
-    "wallet",
-    "confirm",
+    "login",
     "update",
     "security",
-]
+    "confirm",
+    "support",
+    "auth",
+}
 
-SHORTENER_DOMAINS = [
+REDIRECT_PARAMETERS = {
+    "url",
+    "redirect",
+    "redirect_url",
+    "return",
+    "return_url",
+    "next",
+    "continue",
+    "target",
+    "dest",
+    "destination",
+}
+
+SHORTENER_DOMAINS = {
     "bit.ly",
     "tinyurl.com",
     "t.co",
@@ -61,367 +69,348 @@ SHORTENER_DOMAINS = [
     "ow.ly",
     "is.gd",
     "buff.ly",
-]
+}
 
 
-def _safe_text(value):
-    if value is None:
-        return ""
+def _unique(items):
+    seen = set()
+    result = []
 
-    if isinstance(value, bytes):
-        return value.decode("utf-8", errors="ignore")
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
 
-    return str(value)
+    return result
 
 
-def extract_urls(text):
+def extract_urls_from_text(text):
     """
-    Extract HTTP/HTTPS URLs from email content.
+    Extract HTTP/HTTPS URLs from email text.
     """
+    if not text:
+        return []
 
-    text = _safe_text(text)
-
-    pattern = r"""https?://[^\s<>"']+"""
-
-    urls = re.findall(
-        pattern,
-        text,
-        re.IGNORECASE
-    )
-
-    cleaned = []
-
-    for url in urls:
-
-        url = url.rstrip(
-            ".,;:!?)]}"
-        )
-
-        if url not in cleaned:
-            cleaned.append(url)
-
-    return cleaned
-
-
-def _is_ip_address(host):
+    pattern = r'https?://[^\s<>"\']+'
 
     try:
-        ipaddress.ip_address(host)
-        return True
+        matches = re.findall(pattern, str(text), flags=re.IGNORECASE)
 
-    except ValueError:
+        cleaned = []
+
+        for url in matches:
+            url = url.strip()
+
+            # Remove common trailing punctuation from prose.
+            url = url.rstrip(".,;:!?)]}")
+
+            if url:
+                cleaned.append(url)
+
+        return _unique(cleaned)
+
+    except Exception:
+        return []
+
+
+def _is_ipv4(host):
+    if not host:
+        return False
+
+    pattern = r"^(?:\d{1,3}\.){3}\d{1,3}$"
+
+    if not re.match(pattern, host):
+        return False
+
+    try:
+        return all(0 <= int(part) <= 255 for part in host.split("."))
+    except Exception:
         return False
 
 
-def _domain_keywords(domain):
-
-    domain = domain.lower()
-
-    return [
-        keyword
-        for keyword in SUSPICIOUS_DOMAIN_KEYWORDS
-        if keyword in domain
-    ]
-
-
-def _path_keywords(path):
-
-    path = path.lower()
-
-    return [
-        keyword
-        for keyword in SUSPICIOUS_PATH_KEYWORDS
-        if keyword in path
-    ]
-
-
-def analyze_url(url):
-
-    parsed = urlparse(url)
-
-    host = parsed.hostname or ""
-    host = host.lower()
-
-    path = parsed.path or ""
-
-    decoded_url = unquote(url)
-
+def _analyze_single_url(url):
     findings = []
+    risk_points = 0
 
-    risk_score = 0
+    try:
+        parsed = urlparse(url)
 
-    # ---------------------------------------------
-    # Raw IP address
-    # ---------------------------------------------
+        scheme = parsed.scheme.lower()
+        hostname = (parsed.hostname or "").lower()
+        path = (parsed.path or "").lower()
+        query = (parsed.query or "").lower()
 
-    if _is_ip_address(host):
+        full_lower = url.lower()
 
-        risk_score += 30
+        # ---------------------------------------------------------
+        # Scheme
+        # ---------------------------------------------------------
 
-        findings.append(
-            "URL uses a raw IP address instead of a domain."
-        )
+        if scheme == "http":
+            findings.append("URL uses unencrypted HTTP")
+            risk_points += 1
 
-    # ---------------------------------------------
-    # Suspicious domain keywords
-    # ---------------------------------------------
+        elif scheme != "https":
+            findings.append(f"Unusual URL scheme: {scheme}")
+            risk_points += 2
 
-    domain_keywords = _domain_keywords(host)
+        # ---------------------------------------------------------
+        # Raw IP destination
+        # ---------------------------------------------------------
 
-    if domain_keywords:
+        raw_ip = _is_ipv4(hostname)
 
-        risk_score += min(
-            25,
-            len(domain_keywords) * 8
-        )
+        if raw_ip:
+            findings.append("URL points directly to an IP address")
+            risk_points += 3
 
-        findings.append(
-            "Suspicious domain keywords: "
-            + ", ".join(domain_keywords)
-        )
+        # ---------------------------------------------------------
+        # Suspicious path keywords
+        # ---------------------------------------------------------
 
-    # ---------------------------------------------
-    # Suspicious path
-    # ---------------------------------------------
+        matched_path_keywords = []
 
-    path_keywords = _path_keywords(path)
+        for keyword in SUSPICIOUS_PATH_KEYWORDS:
+            if keyword in path:
+                matched_path_keywords.append(keyword)
 
-    if path_keywords:
+        if matched_path_keywords:
+            matched_path_keywords = sorted(set(matched_path_keywords))
 
-        risk_score += min(
-            30,
-            len(path_keywords) * 7
-        )
+            findings.append(
+                "Credential/account-oriented URL path: "
+                + ", ".join(matched_path_keywords)
+            )
 
-        findings.append(
-            "Sensitive action path detected: "
-            + ", ".join(path_keywords)
-        )
+            risk_points += min(3, len(matched_path_keywords))
 
-    # ---------------------------------------------
-    # HTTP instead of HTTPS
-    # ---------------------------------------------
+        # ---------------------------------------------------------
+        # Suspicious domain keywords
+        # ---------------------------------------------------------
 
-    if parsed.scheme.lower() == "http":
+        matched_domain_keywords = []
 
-        risk_score += 15
+        for keyword in SUSPICIOUS_DOMAIN_KEYWORDS:
+            if keyword in hostname:
+                matched_domain_keywords.append(keyword)
 
-        findings.append(
-            "URL uses HTTP instead of HTTPS."
-        )
+        if matched_domain_keywords:
+            matched_domain_keywords = sorted(set(matched_domain_keywords))
 
-    # ---------------------------------------------
-    # Embedded credentials
-    # ---------------------------------------------
+            findings.append(
+                "Suspicious domain keyword pattern: "
+                + ", ".join(matched_domain_keywords)
+            )
 
-    if parsed.username or parsed.password:
+            risk_points += 1
 
-        risk_score += 25
+        # ---------------------------------------------------------
+        # URL obfuscation
+        # ---------------------------------------------------------
 
-        findings.append(
-            "URL contains embedded credentials."
-        )
-
-    # ---------------------------------------------
-    # Excessive URL length
-    # ---------------------------------------------
-
-    if len(url) > 150:
-
-        risk_score += 10
-
-        findings.append(
-            "Unusually long URL detected."
-        )
-
-    # ---------------------------------------------
-    # Percent encoding
-    # ---------------------------------------------
-
-    if "%" in url:
-
-        risk_score += 8
-
-        findings.append(
-            "URL contains percent-encoded characters."
-        )
-
-    # ---------------------------------------------
-    # @ symbol
-    # ---------------------------------------------
-
-    if "@" in url:
-
-        risk_score += 15
-
-        findings.append(
-            "URL contains '@' character which may "
-            "obscure the actual destination."
-        )
-
-    # ---------------------------------------------
-    # URL shortener
-    # ---------------------------------------------
-
-    is_shortener = host in SHORTENER_DOMAINS
-
-    if is_shortener:
-
-        risk_score += 12
-
-        findings.append(
-            "URL uses a known URL-shortening service."
-        )
-
-    # ---------------------------------------------
-    # Deep subdomain structure
-    # ---------------------------------------------
-
-    subdomain_count = max(
-        0,
-        len(host.split(".")) - 2
-    )
-
-    if subdomain_count >= 3:
-
-        risk_score += 10
-
-        findings.append(
-            "URL contains an unusually deep "
-            "subdomain structure."
-        )
-
-    # ---------------------------------------------
-    # URL decoding difference
-    # ---------------------------------------------
-
-    if decoded_url != url:
-
-        findings.append(
-            "URL changes after decoding."
-        )
-
-    risk_score = min(
-        100,
-        risk_score
-    )
-
-    # ---------------------------------------------
-    # Risk level
-    # ---------------------------------------------
-
-    if risk_score >= 70:
-
-        risk_level = "HIGH"
-
-    elif risk_score >= 40:
-
-        risk_level = "MEDIUM"
-
-    elif risk_score >= 15:
-
-        risk_level = "LOW"
-
-    else:
-
-        risk_level = "MINIMAL"
-
-    return {
-
-        "url": url,
-
-        "domain": host,
-
-        "scheme": parsed.scheme,
-
-        "path": path,
-
-        "is_https": (
-            parsed.scheme.lower() == "https"
-        ),
-
-        "is_ip_address": (
-            _is_ip_address(host)
-        ),
-
-        "is_shortener": is_shortener,
-
-        "domain_keywords": domain_keywords,
-
-        "path_keywords": path_keywords,
-
-        "risk_score": risk_score,
-
-        "risk_level": risk_level,
-
-        "findings": list(
-            dict.fromkeys(findings)
-        ),
-    }
-
-
-def analyze_urls(text):
-
-    urls = extract_urls(text)
+        obfuscation_patterns = [
+            "%40",
+            "%2f",
+            "%2e",
+            "%3a",
+            "@",
+        ]
+
+        matched_obfuscation = [
+            pattern
+            for pattern in obfuscation_patterns
+            if pattern in full_lower
+        ]
+
+        if matched_obfuscation:
+            findings.append("Potential URL obfuscation detected")
+            risk_points += 2
+
+        # ---------------------------------------------------------
+        # Excessive length
+        # ---------------------------------------------------------
+
+        if len(url) > 180:
+            findings.append("Unusually long URL")
+            risk_points += 1
+
+        # ---------------------------------------------------------
+        # Redirect indicators
+        # ---------------------------------------------------------
+
+        redirect_matches = []
+
+        query_parts = query.split("&")
+
+        for part in query_parts:
+            if "=" not in part:
+                continue
+
+            key = part.split("=", 1)[0].strip().lower()
+
+            if key in REDIRECT_PARAMETERS:
+                redirect_matches.append(key)
+
+        if redirect_matches:
+            redirect_matches = sorted(set(redirect_matches))
+
+            findings.append(
+                "Redirect parameter detected: "
+                + ", ".join(redirect_matches)
+            )
+
+            risk_points += 2
+
+        # ---------------------------------------------------------
+        # URL shortener
+        # ---------------------------------------------------------
+
+        is_shortener = hostname in SHORTENER_DOMAINS
+
+        if is_shortener:
+            findings.append("Known URL-shortener domain detected")
+            risk_points += 2
+
+        # ---------------------------------------------------------
+        # Suspicious hostname structure
+        # ---------------------------------------------------------
+
+        hostname_parts = hostname.split(".") if hostname else []
+
+        if len(hostname_parts) >= 4:
+            findings.append("Deeply nested hostname")
+            risk_points += 1
+
+        # ---------------------------------------------------------
+        # Risk classification
+        # ---------------------------------------------------------
+
+        if risk_points >= 6:
+            risk_level = "HIGH"
+        elif risk_points >= 3:
+            risk_level = "MEDIUM"
+        elif risk_points >= 1:
+            risk_level = "LOW"
+        else:
+            risk_level = "MINIMAL"
+
+        return {
+            "url": url,
+            "scheme": scheme,
+            "hostname": hostname,
+            "path": parsed.path or "",
+            "query": parsed.query or "",
+            "is_ip_destination": raw_ip,
+            "is_url_shortener": is_shortener,
+            "suspicious": bool(findings),
+            "risk_level": risk_level,
+            "risk_score": risk_points,
+            "findings": findings,
+        }
+
+    except Exception as error:
+        return {
+            "url": url,
+            "scheme": "",
+            "hostname": "",
+            "path": "",
+            "query": "",
+            "is_ip_destination": False,
+            "is_url_shortener": False,
+            "suspicious": False,
+            "risk_level": "UNKNOWN",
+            "risk_score": 0,
+            "findings": [
+                f"URL parsing error: {str(error)}"
+            ],
+        }
+
+
+def analyze_urls(urls):
+    """
+    Analyze a list of URLs.
+    """
+
+    if not urls:
+        return {
+            "total": 0,
+            "suspicious_count": 0,
+            "suspicious_urls": [],
+            "risk_level": "NONE",
+            "urls": [],
+            "findings": [],
+            "engine": {
+                "name": "TARVEX26 URL Intelligence Engine",
+                "version": "1.0",
+                "analysis_type": "URL heuristic and structural analysis",
+            },
+        }
+
+    if isinstance(urls, str):
+        urls = extract_urls_from_text(urls)
 
     results = []
 
     for url in urls:
+        if not isinstance(url, str):
+            continue
 
-        results.append(
-            analyze_url(url)
-        )
+        url = url.strip()
 
-    suspicious = [
+        if not url:
+            continue
+
+        results.append(_analyze_single_url(url))
+
+    suspicious_results = [
         item
         for item in results
-        if item["risk_score"] >= 40
+        if item.get("suspicious")
     ]
 
-    if any(
-        item["risk_score"] >= 70
-        for item in results
-    ):
+    findings = []
 
+    for item in results:
+        for finding in item.get("findings", []):
+            findings.append(
+                f"{item.get('url')}: {finding}"
+            )
+
+    if any(item.get("risk_level") == "HIGH" for item in results):
         overall_risk = "HIGH"
-
-    elif suspicious:
-
+    elif any(item.get("risk_level") == "MEDIUM" for item in results):
         overall_risk = "MEDIUM"
-
-    elif results:
-
+    elif any(item.get("risk_level") == "LOW" for item in results):
         overall_risk = "LOW"
-
+    elif results:
+        overall_risk = "MINIMAL"
     else:
-
         overall_risk = "NONE"
 
     return {
-
-        "total_urls": len(urls),
-
-        "suspicious_urls": len(
-            suspicious
-        ),
-
-        "urls": results,
-
+        "total": len(results),
+        "suspicious_count": len(suspicious_results),
+        "suspicious_urls": [
+            item.get("url")
+            for item in suspicious_results
+        ],
         "risk_level": overall_risk,
-
+        "urls": results,
+        "findings": _unique(findings),
         "engine": {
-
-            "name":
-                "TARVEX26 URL Intelligence Engine",
-
-            "version":
-                "1.0",
-
-            "analysis_type":
-                "URL structural and phishing "
-                "indicator analysis",
-
-            "external_reputation":
-                "PENDING THREAT INTELLIGENCE MODULE"
-        }
+            "name": "TARVEX26 URL Intelligence Engine",
+            "version": "1.0",
+            "analysis_type": "URL heuristic and structural analysis",
+            "capabilities": [
+                "URL extraction",
+                "Scheme analysis",
+                "Credential-path detection",
+                "Suspicious domain pattern detection",
+                "Raw IP destination detection",
+                "Obfuscation detection",
+                "Redirect detection",
+                "URL shortener detection",
+                "Risk classification",
+            ],
+        },
     }

@@ -1,23 +1,10 @@
 """
 TARVEX26
-GeoIP Intelligence Engine
-SIH26106 - Email Threat Detection and Forensic Intelligence
+GeoIP Intelligence Engine v3.0
 
-Purpose:
-- Geolocate public IP addresses
-- Identify country / region / city
-- Identify ISP / organization
-- Identify ASN
-- Identify latitude / longitude
-- Identify timezone
-- Detect private and documentation/test addresses
-- Perform reverse DNS
-- Avoid false geographic attribution
-
-External GeoIP provider:
-ipwho.is
-
-No API key is required for basic lookups.
+SIH26106
+AI-Powered Email Threat Detection, GeoLocation
+and Forensic Intelligence Platform
 """
 
 import ipaddress
@@ -31,159 +18,293 @@ import requests
 # CONFIGURATION
 # ============================================================
 
-GEOIP_API_URL = "https://ipwho.is/{ip}"
+PROVIDER_NAME = "ipwho.is"
+PROVIDER_VERSION = "3.0"
 
 REQUEST_TIMEOUT = 6
 
 
 # ============================================================
-# HELPERS
+# TIME
 # ============================================================
 
-def _unique(values):
+def utc_now():
+    return datetime.now(timezone.utc).isoformat()
 
+
+# ============================================================
+# SAFE HELPERS
+# ============================================================
+
+def value_or(value, fallback="Unavailable"):
+    if value is None:
+        return fallback
+
+    if isinstance(value, str) and not value.strip():
+        return fallback
+
+    return value
+
+
+def unique(items):
     result = []
-    seen = set()
 
-    for value in values:
-
-        if value is None:
-            continue
-
-        value = str(value).strip()
-
-        if not value:
-            continue
-
-        if value not in seen:
-            seen.add(value)
-            result.append(value)
+    for item in items:
+        if item and item not in result:
+            result.append(item)
 
     return result
 
 
-def _extract_ip_values(ip_input):
+# ============================================================
+# IP VALIDATION
+# ============================================================
 
+def parse_ip(value):
     """
-    Accepts:
+    Strictly validate an IPv4/IPv6 address.
 
-    [
-        "8.8.8.8",
-        "1.1.1.1"
-    ]
+    Prevents timestamps such as:
+        09:29:40
 
-    OR
-
-    {
-        "ip_addresses": [...]
-    }
-
-    OR a single string.
+    from being treated as IP addresses.
     """
 
-    if ip_input is None:
-        return []
+    if value is None:
+        return None
 
-    if isinstance(ip_input, dict):
+    value = str(value).strip()
 
-        possible = (
-            ip_input.get("ip_addresses")
-            or ip_input.get("ips")
-            or ip_input.get("results")
-            or []
-        )
+    if not value:
+        return None
 
-        if isinstance(possible, list):
-            return _unique(possible)
-
-        if isinstance(possible, str):
-            return [possible]
-
-        return []
-
-    if isinstance(ip_input, (list, tuple, set)):
-
-        return _unique(ip_input)
-
-    if isinstance(ip_input, str):
-
-        return [ip_input.strip()]
-
-    return []
-
-
-def _classify_ip(ip):
+    # Remove common surrounding characters
+    value = value.strip("[]()<>\"'")
 
     try:
-
-        address = ipaddress.ip_address(ip)
-
+        return ipaddress.ip_address(value)
     except ValueError:
+        return None
 
-        return {
-            "valid": False,
-            "type": "INVALID",
-            "is_private": False,
-            "is_documentation": False,
-            "is_public": False,
-            "version": "UNKNOWN"
-        }
 
-    is_documentation = address.is_private and (
-        ip.startswith("192.0.2.")
-        or ip.startswith("198.51.100.")
-        or ip.startswith("203.0.113.")
+# ============================================================
+# 6TO4 ANALYSIS
+# ============================================================
+
+def analyze_6to4(ip_obj):
+    """
+    Detect IPv6 6to4 addresses.
+
+    6to4 format:
+        2002:WWXX:YYZZ::/48
+
+    The first 32 bits after 2002 represent an embedded IPv4 address.
+    """
+
+    if ip_obj.version != 6:
+        return None
+
+    if not ip_obj.exploded.startswith("2002:"):
+        return None
+
+    packed = ip_obj.packed
+
+    embedded_ipv4 = ".".join(
+        str(byte)
+        for byte in packed[2:6]
     )
 
-    if is_documentation:
-
-        address_type = "DOCUMENTATION"
-
-    elif address.is_loopback:
-
-        address_type = "LOOPBACK"
-
-    elif address.is_link_local:
-
-        address_type = "LINK_LOCAL"
-
-    elif address.is_multicast:
-
-        address_type = "MULTICAST"
-
-    elif address.is_private:
-
-        address_type = "PRIVATE"
-
-    elif address.is_reserved:
-
-        address_type = "RESERVED"
-
-    elif address.is_global:
-
-        address_type = "PUBLIC"
-
-    else:
-
-        address_type = "SPECIAL"
+    try:
+        embedded = ipaddress.ip_address(embedded_ipv4)
+    except ValueError:
+        return {
+            "detected": True,
+            "embedded_ipv4": embedded_ipv4,
+            "embedded_public": False,
+            "embedded_private": False,
+        }
 
     return {
+        "detected": True,
+        "embedded_ipv4": embedded_ipv4,
+        "embedded_public": embedded.is_global,
+        "embedded_private": embedded.is_private,
+    }
 
-        "valid": True,
 
-        "type": address_type,
+# ============================================================
+# ADDRESS CLASSIFICATION
+# ============================================================
 
-        "is_private": address.is_private,
+def classify_ip(ip_obj):
+    """
+    Return a forensic classification for the address.
+    """
 
-        "is_documentation": is_documentation,
+    six_to_four = analyze_6to4(ip_obj)
 
-        "is_public": address.is_global,
+    # --------------------------------------------------------
+    # 6to4 IPv6
+    # --------------------------------------------------------
 
-        "version": (
-            "IPv4"
-            if address.version == 4
-            else "IPv6"
-        )
+    if six_to_four:
+
+        embedded = six_to_four["embedded_ipv4"]
+
+        if six_to_four["embedded_private"]:
+
+            return {
+                "type": "6to4 / Non-Routable Derived",
+                "status": "NON_ROUTABLE",
+                "confidence": "HIGH",
+                "classification": "6TO4_PRIVATE",
+                "six_to_four": six_to_four,
+                "findings": [
+                    "6to4 IPv6 address detected.",
+                    f"Embedded IPv4 address: {embedded}.",
+                    "Embedded IPv4 address is private/non-routable.",
+                    "Public geolocation is not applicable.",
+                    "No geographic attribution was made."
+                ]
+            }
+
+        if six_to_four["embedded_public"]:
+
+            return {
+                "type": "6to4 / Derived IPv6",
+                "status": "DERIVED_PUBLIC",
+                "confidence": "MEDIUM",
+                "classification": "6TO4_PUBLIC",
+                "six_to_four": six_to_four,
+                "findings": [
+                    "6to4 IPv6 address detected.",
+                    f"Embedded IPv4 address: {embedded}.",
+                    "Geolocation may be evaluated using the embedded public IPv4."
+                ]
+            }
+
+    # --------------------------------------------------------
+    # Private
+    # --------------------------------------------------------
+
+    if ip_obj.is_private:
+
+        return {
+            "type": "Private / Non-Routable",
+            "status": "NON_ROUTABLE",
+            "confidence": "HIGH",
+            "classification": "PRIVATE",
+            "six_to_four": None,
+            "findings": [
+                "Private IP address detected.",
+                "Public Internet geolocation is not applicable.",
+                "No geographic attribution was made."
+            ]
+        }
+
+    # --------------------------------------------------------
+    # Loopback
+    # --------------------------------------------------------
+
+    if ip_obj.is_loopback:
+
+        return {
+            "type": "Loopback",
+            "status": "NON_ROUTABLE",
+            "confidence": "HIGH",
+            "classification": "LOOPBACK",
+            "six_to_four": None,
+            "findings": [
+                "Loopback address detected.",
+                "The address does not identify a public Internet host."
+            ]
+        }
+
+    # --------------------------------------------------------
+    # Link Local
+    # --------------------------------------------------------
+
+    if ip_obj.is_link_local:
+
+        return {
+            "type": "Link-Local",
+            "status": "NON_ROUTABLE",
+            "confidence": "HIGH",
+            "classification": "LINK_LOCAL",
+            "six_to_four": None,
+            "findings": [
+                "Link-local address detected.",
+                "Public Internet geolocation is not applicable."
+            ]
+        }
+
+    # --------------------------------------------------------
+    # Multicast
+    # --------------------------------------------------------
+
+    if ip_obj.is_multicast:
+
+        return {
+            "type": "Multicast",
+            "status": "NON_ROUTABLE",
+            "confidence": "HIGH",
+            "classification": "MULTICAST",
+            "six_to_four": None,
+            "findings": [
+                "Multicast address detected.",
+                "The address does not identify a single public Internet host."
+            ]
+        }
+
+    # --------------------------------------------------------
+    # Reserved
+    # --------------------------------------------------------
+
+    if ip_obj.is_reserved:
+
+        return {
+            "type": "Reserved",
+            "status": "NON_ROUTABLE",
+            "confidence": "HIGH",
+            "classification": "RESERVED",
+            "six_to_four": None,
+            "findings": [
+                "Reserved IP address detected.",
+                "Public geographic attribution is not applicable."
+            ]
+        }
+
+    # --------------------------------------------------------
+    # Global
+    # --------------------------------------------------------
+
+    if ip_obj.is_global:
+
+        return {
+            "type": "Public",
+            "status": "FOUND",
+            "confidence": "MEDIUM",
+            "classification": "PUBLIC",
+            "six_to_four": None,
+            "findings": [
+                "Globally routable public IP address detected."
+            ]
+        }
+
+    # --------------------------------------------------------
+    # Unknown
+    # --------------------------------------------------------
+
+    return {
+        "type": "Special / Non-Global",
+        "status": "NON_ROUTABLE",
+        "confidence": "HIGH",
+        "classification": "SPECIAL",
+        "six_to_four": None,
+        "findings": [
+            "IP address is not globally routable.",
+            "Public geolocation is not applicable."
+        ]
     }
 
 
@@ -191,48 +312,29 @@ def _classify_ip(ip):
 # REVERSE DNS
 # ============================================================
 
-def _reverse_dns(ip):
-
+def reverse_dns(ip):
     try:
+        hostname, _, _ = socket.gethostbyaddr(ip)
 
-        hostname, aliases, addresses = socket.gethostbyaddr(ip)
+        if hostname:
+            return hostname
 
-        return {
+    except Exception:
+        pass
 
-            "status": "FOUND",
-
-            "hostname": hostname,
-
-            "aliases": aliases or [],
-
-            "addresses": addresses or []
-        }
-
-    except Exception as error:
-
-        return {
-
-            "status": "NOT_FOUND",
-
-            "hostname": None,
-
-            "aliases": [],
-
-            "addresses": [],
-
-            "error": str(error)
-        }
+    return None
 
 
 # ============================================================
-# GEOIP LOOKUP
+# IPWHO LOOKUP
 # ============================================================
 
-def _lookup_geoip(ip):
+def lookup_ipwho(ip):
+    """
+    Query ipwho.is for public/global IPs.
+    """
 
-    url = GEOIP_API_URL.format(
-        ip=ip
-    )
+    url = f"https://ipwho.is/{ip}"
 
     try:
 
@@ -240,597 +342,675 @@ def _lookup_geoip(ip):
             url,
             timeout=REQUEST_TIMEOUT,
             headers={
-                "User-Agent":
-                    "TARVEX26-SIH26106-Forensics"
+                "User-Agent": "TARVEX26-GeoIP/3.0"
             }
         )
 
         if response.status_code != 200:
-
             return {
-
-                "status": "UNAVAILABLE",
-
-                "error":
-                    f"GeoIP provider returned HTTP {response.status_code}"
+                "success": False,
+                "error": f"Provider HTTP {response.status_code}"
             }
 
         data = response.json()
 
         if not data.get("success", False):
-
             return {
-
-                "status": "UNAVAILABLE",
-
-                "error":
-                    data.get(
-                        "message",
-                        "GeoIP lookup failed."
-                    )
+                "success": False,
+                "error": data.get(
+                    "message",
+                    "GeoIP provider did not return a successful result."
+                )
             }
 
-
-        connection = data.get(
-            "connection"
-        ) or {}
-
-
-        timezone_data = data.get(
-            "timezone"
-        ) or {}
-
-
-        return {
-
-            "status": "FOUND",
-
-            "country":
-                data.get(
-                    "country"
-                ) or "Unavailable",
-
-            "country_code":
-                data.get(
-                    "country_code"
-                ) or "Unavailable",
-
-            "region":
-                data.get(
-                    "region"
-                ) or "Unavailable",
-
-            "city":
-                data.get(
-                    "city"
-                ) or "Unavailable",
-
-            "postal":
-                data.get(
-                    "postal"
-                ) or "Unavailable",
-
-            "latitude":
-                data.get(
-                    "latitude"
-                ),
-
-            "longitude":
-                data.get(
-                    "longitude"
-                ),
-
-            "isp":
-                connection.get(
-                    "isp"
-                ) or "Unavailable",
-
-            "organization":
-                connection.get(
-                    "org"
-                ) or "Unavailable",
-
-            "asn":
-                connection.get(
-                    "asn"
-                ) or "Unavailable",
-
-            "domain":
-                connection.get(
-                    "domain"
-                ) or "Unavailable",
-
-            "timezone":
-                timezone_data.get(
-                    "id"
-                ) or "Unavailable",
-
-            "utc_offset":
-                timezone_data.get(
-                    "utc"
-                ) or "Unavailable"
-        }
-
+        return data
 
     except requests.RequestException as error:
 
         return {
-
-            "status": "UNAVAILABLE",
-
-            "error":
-                f"GeoIP network error: {str(error)}"
+            "success": False,
+            "error": f"GeoIP provider unavailable: {str(error)}"
         }
 
     except Exception as error:
 
         return {
-
-            "status": "UNAVAILABLE",
-
-            "error":
-                f"GeoIP analysis error: {str(error)}"
+            "success": False,
+            "error": f"GeoIP lookup error: {str(error)}"
         }
 
 
 # ============================================================
-# SINGLE IP ANALYSIS
+# NORMALIZE PROVIDER RESULT
 # ============================================================
 
-def _analyze_single_ip(ip):
+def normalize_provider_result(
+    ip,
+    data,
+    classification,
+    reverse_dns_value=None
+):
 
-    ip = str(ip).strip()
+    connection = data.get("connection") or {}
+    security = data.get("security") or {}
+    timezone = data.get("timezone") or {}
 
-    classification = _classify_ip(ip)
+    provider_reverse = (
+        connection.get("domain")
+        or data.get("reverse")
+        or reverse_dns_value
+    )
 
-    timestamp = datetime.now(
-        timezone.utc
-    ).isoformat()
-
-
-    # --------------------------------------------------------
-    # INVALID IP
-    # --------------------------------------------------------
-
-    if not classification["valid"]:
-
-        return {
-
-            "ip": ip,
-
-            "type": "Invalid",
-
-            "ip_version": "N/A",
-
-            "country": "Unavailable",
-
-            "country_code": "N/A",
-
-            "region": "Unavailable",
-
-            "city": "Unavailable",
-
-            "postal": "Unavailable",
-
-            "latitude": None,
-
-            "longitude": None,
-
-            "organization": "Unavailable",
-
-            "isp": "Unavailable",
-
-            "asn": "Unavailable",
-
-            "domain": "Unavailable",
-
-            "timezone": "Unavailable",
-
-            "reverse_dns": "Unavailable",
-
-            "reputation": "UNKNOWN",
-
-            "status": "INVALID",
-
-            "findings": [
-                "Invalid IP address supplied."
-            ],
-
-            "confidence": "HIGH",
-
-            "analyzed_at": timestamp
-        }
-
+    findings = list(
+        classification.get("findings", [])
+    )
 
     # --------------------------------------------------------
-    # DOCUMENTATION IP
+    # Security indicators
     # --------------------------------------------------------
 
-    if classification["is_documentation"]:
+    vpn = bool(security.get("vpn"))
+    proxy = bool(security.get("proxy"))
+    tor = bool(security.get("tor"))
+    hosting = bool(security.get("hosting"))
 
-        return {
-
-            "ip": ip,
-
-            "type": "Documentation/Test",
-
-            "ip_version":
-                classification["version"],
-
-            "country":
-                "Not applicable",
-
-            "country_code":
-                "N/A",
-
-            "region":
-                "Not applicable",
-
-            "city":
-                "Not applicable",
-
-            "postal":
-                "N/A",
-
-            "latitude":
-                None,
-
-            "longitude":
-                None,
-
-            "organization":
-                "Documentation Network",
-
-            "isp":
-                "Documentation Network",
-
-            "asn":
-                "N/A",
-
-            "domain":
-                "N/A",
-
-            "timezone":
-                "N/A",
-
-            "reverse_dns":
-                "N/A",
-
-            "reputation":
-                "TEST_ADDRESS",
-
-            "status":
-                "DOCUMENTATION",
-
-            "findings": [
-
-                "Documentation/test IP detected.",
-
-                "Real-world geographic attribution is not applicable.",
-
-                "This address should not be used to infer an attacker's location."
-            ],
-
-            "confidence":
-                "HIGH",
-
-            "analyzed_at":
-                timestamp
-        }
-
-
-    # --------------------------------------------------------
-    # PRIVATE / SPECIAL IP
-    # --------------------------------------------------------
-
-    if not classification["is_public"]:
-
-        reverse = _reverse_dns(ip)
-
-        return {
-
-            "ip": ip,
-
-            "type":
-                classification["type"],
-
-            "ip_version":
-                classification["version"],
-
-            "country":
-                "Private Network",
-
-            "country_code":
-                "N/A",
-
-            "region":
-                "N/A",
-
-            "city":
-                "N/A",
-
-            "postal":
-                "N/A",
-
-            "latitude":
-                None,
-
-            "longitude":
-                None,
-
-            "organization":
-                "Private Network",
-
-            "isp":
-                "N/A",
-
-            "asn":
-                "N/A",
-
-            "domain":
-                "N/A",
-
-            "timezone":
-                "N/A",
-
-            "reverse_dns":
-                reverse.get(
-                    "hostname"
-                ) or "Unavailable",
-
-            "reputation":
-                "NOT_APPLICABLE",
-
-            "status":
-                "PRIVATE",
-
-            "findings": [
-
-                f"{classification['type']} IP detected.",
-
-                "Public internet geolocation is not applicable."
-            ],
-
-            "confidence":
-                "HIGH",
-
-            "analyzed_at":
-                timestamp
-        }
-
-
-    # --------------------------------------------------------
-    # PUBLIC IP
-    # --------------------------------------------------------
-
-    reverse = _reverse_dns(ip)
-
-    geo = _lookup_geoip(ip)
-
-
-    findings = []
-
-
-    if reverse.get("hostname"):
-
+    if vpn:
         findings.append(
-            "Reverse DNS hostname identified: "
-            + reverse["hostname"]
+            "VPN indicator reported by GeoIP security intelligence."
         )
 
-
-    if geo.get("status") == "FOUND":
-
+    if proxy:
         findings.append(
-            "Public IP successfully geolocated."
+            "Proxy indicator reported by GeoIP security intelligence."
         )
 
+    if tor:
+        findings.append(
+            "Tor indicator reported by GeoIP security intelligence."
+        )
+
+    if hosting:
+        findings.append(
+            "Hosting infrastructure indicator reported."
+        )
+
+    # --------------------------------------------------------
+    # Reputation
+    # --------------------------------------------------------
+
+    threat = security.get("threat")
+
+    if threat is True:
+        reputation = "THREAT INDICATED"
+
+    elif threat is False:
+        reputation = "NO THREAT INDICATED"
+
+    else:
+        reputation = "UNKNOWN"
+
+    # --------------------------------------------------------
+    # Confidence
+    # --------------------------------------------------------
+
+    confidence = classification.get(
+        "confidence",
+        "MEDIUM"
+    )
+
+    if (
+        data.get("country")
+        and data.get("city")
+        and connection.get("asn")
+    ):
         confidence = "HIGH"
+
+    # --------------------------------------------------------
+    # Result
+    # --------------------------------------------------------
+
+    return {
+        "ip": ip,
+        "ip_version": f"IPv{ipaddress.ip_address(ip).version}",
+
+        "type": "Public",
+
+        "status": "FOUND",
+
+        "confidence": confidence,
+
+        "country": value_or(
+            data.get("country")
+        ),
+
+        "country_code": value_or(
+            data.get("country_code"),
+            "N/A"
+        ),
+
+        "region": value_or(
+            data.get("region")
+        ),
+
+        "city": value_or(
+            data.get("city")
+        ),
+
+        "postal": value_or(
+            data.get("postal")
+        ),
+
+        "latitude": data.get("latitude"),
+
+        "longitude": data.get("longitude"),
+
+        "timezone": value_or(
+            timezone.get("id")
+        ),
+
+        "organization": value_or(
+            connection.get("org")
+        ),
+
+        "isp": value_or(
+            connection.get("isp")
+        ),
+
+        "asn": value_or(
+            connection.get("asn"),
+            "N/A"
+        ),
+
+        "reverse_dns": value_or(
+            provider_reverse
+        ),
+
+        "domain": value_or(
+            connection.get("domain")
+        ),
+
+        "reputation": reputation,
+
+        "security": {
+            "vpn": vpn,
+            "proxy": proxy,
+            "tor": tor,
+            "hosting": hosting,
+            "threat": threat
+        },
+
+        "findings": unique(findings),
+
+        "analyzed_at": utc_now(),
+
+        "provider": PROVIDER_NAME
+    }
+
+
+# ============================================================
+# NON-ROUTABLE RESULT
+# ============================================================
+
+def build_non_routable_result(
+    ip,
+    classification
+):
+
+    six_to_four = classification.get(
+        "six_to_four"
+    )
+
+    findings = list(
+        classification.get("findings", [])
+    )
+
+    if six_to_four:
+
+        embedded = six_to_four.get(
+            "embedded_ipv4"
+        )
+
+        embedded_private = six_to_four.get(
+            "embedded_private",
+            False
+        )
+
+        if embedded_private:
+
+            result_type = "6to4 / Non-Routable Derived"
+
+        else:
+
+            result_type = "6to4 / Derived IPv6"
 
     else:
 
-        findings.append(
-            "Public IP geolocation unavailable."
+        result_type = classification.get(
+            "type",
+            "Non-Routable"
         )
-
-        confidence = "LOW"
-
 
     return {
 
         "ip": ip,
 
-        "type": "Public",
+        "ip_version": f"IPv{ipaddress.ip_address(ip).version}",
 
-        "ip_version":
-            classification["version"],
+        "type": result_type,
 
-        "country":
-            geo.get(
-                "country",
-                "Unavailable"
-            ),
+        "status": classification.get(
+            "status",
+            "NON_ROUTABLE"
+        ),
 
-        "country_code":
-            geo.get(
-                "country_code",
-                "Unavailable"
-            ),
+        "confidence": classification.get(
+            "confidence",
+            "HIGH"
+        ),
 
-        "region":
-            geo.get(
-                "region",
-                "Unavailable"
-            ),
+        "country": "Not applicable",
 
-        "city":
-            geo.get(
-                "city",
-                "Unavailable"
-            ),
+        "country_code": "N/A",
 
-        "postal":
-            geo.get(
-                "postal",
-                "Unavailable"
-            ),
+        "region": "Not applicable",
 
-        "latitude":
-            geo.get(
-                "latitude"
-            ),
+        "city": "Not applicable",
 
-        "longitude":
-            geo.get(
-                "longitude"
-            ),
+        "postal": "N/A",
 
-        "organization":
-            geo.get(
-                "organization",
-                "Unavailable"
-            ),
+        "latitude": None,
 
-        "isp":
-            geo.get(
-                "isp",
-                "Unavailable"
-            ),
+        "longitude": None,
 
-        "asn":
-            geo.get(
-                "asn",
-                "Unavailable"
-            ),
+        "timezone": "N/A",
 
-        "domain":
-            geo.get(
-                "domain",
-                "Unavailable"
-            ),
+        "organization": "Not applicable",
 
-        "timezone":
-            geo.get(
-                "timezone",
-                "Unavailable"
-            ),
+        "isp": "Not applicable",
 
-        "reverse_dns":
-            reverse.get(
-                "hostname"
-            ) or "Unavailable",
+        "asn": "N/A",
 
-        "reputation":
-            "UNKNOWN",
+        "reverse_dns": "N/A",
 
-        "status":
-            geo.get(
-                "status",
-                "UNAVAILABLE"
-            ),
+        "domain": "N/A",
 
-        "findings":
-            findings,
+        "reputation": "NOT_APPLICABLE",
 
-        "confidence":
-            confidence,
+        "security": {
+            "vpn": False,
+            "proxy": False,
+            "tor": False,
+            "hosting": False,
+            "threat": None
+        },
 
-        "analyzed_at":
-            timestamp,
+        "findings": unique(findings),
 
-        "provider":
-            "ipwho.is"
+        "analyzed_at": utc_now(),
+
+        "provider": PROVIDER_NAME
     }
 
 
 # ============================================================
-# MAIN FUNCTION
+# MAIN ANALYZER
 # ============================================================
 
-def analyze_ips(ip_input):
+def analyze_ips(ip_addresses):
 
-    ip_addresses = _extract_ip_values(
-        ip_input
-    )
+    if not ip_addresses:
+
+        return {
+            "status": "NO_IPS",
+            "total": 0,
+            "public_count": 0,
+            "private_count": 0,
+            "documentation_count": 0,
+            "suspicious_count": 0,
+            "results": [],
+            "findings": [
+                "No IP addresses were supplied."
+            ],
+            "engine": {
+                "name": "TARVEX26 GeoIP Intelligence Engine",
+                "version": PROVIDER_VERSION,
+                "provider": PROVIDER_NAME,
+                "capabilities": [
+                    "IPv4 geolocation",
+                    "IPv6 geolocation",
+                    "Country identification",
+                    "Region identification",
+                    "City identification",
+                    "Latitude/longitude",
+                    "ISP identification",
+                    "Organization identification",
+                    "ASN identification",
+                    "Timezone identification",
+                    "Reverse DNS",
+                    "6to4 detection",
+                    "Private IP detection",
+                    "Documentation IP detection",
+                    "VPN indicator detection",
+                    "Proxy indicator detection",
+                    "Tor indicator detection",
+                    "Hosting indicator detection",
+                    "False attribution prevention"
+                ],
+                "note": (
+                    "Non-routable, private, reserved and "
+                    "documentation addresses are not assigned "
+                    "real-world geographic locations."
+                )
+            }
+        }
+
+    # --------------------------------------------------------
+    # Strict validation
+    # --------------------------------------------------------
+
+    valid_ips = []
+
+    rejected = []
+
+    for value in ip_addresses:
+
+        ip_obj = parse_ip(value)
+
+        if ip_obj is None:
+
+            rejected.append(
+                str(value)
+            )
+
+            continue
+
+        normalized = str(ip_obj)
+
+        if normalized not in valid_ips:
+
+            valid_ips.append(normalized)
 
     results = []
 
     findings = []
 
     public_count = 0
-
     private_count = 0
-
     documentation_count = 0
+    suspicious_count = 0
 
+    # --------------------------------------------------------
+    # Analyze every valid IP
+    # --------------------------------------------------------
 
-    for ip in ip_addresses:
+    for ip in valid_ips:
 
-        result = _analyze_single_ip(
-            ip
+        ip_obj = ipaddress.ip_address(ip)
+
+        classification = classify_ip(
+            ip_obj
         )
 
-        results.append(
-            result
-        )
+        # ----------------------------------------------------
+        # Documentation/test addresses
+        # ----------------------------------------------------
 
-
-        if result["type"] == "Public":
-
-            public_count += 1
-
-        elif result["type"] == "Documentation/Test":
+        if (
+            ip_obj.is_private
+            and (
+                ip_obj.is_reserved
+                or ip.startswith("192.0.2.")
+                or ip.startswith("198.51.100.")
+                or ip.startswith("203.0.113.")
+            )
+        ):
 
             documentation_count += 1
 
-        else:
+            result = build_non_routable_result(
+                ip,
+                {
+                    **classification,
+                    "type": "Documentation / Test",
+                    "status": "DOCUMENTATION",
+                    "confidence": "HIGH",
+                    "findings": [
+                        "Documentation/test IP detected.",
+                        "Real-world geographic attribution is not applicable.",
+                        "This address should not be used to infer an attacker's location."
+                    ]
+                }
+            )
+
+            result["organization"] = "Documentation Network"
+            result["isp"] = "Documentation Network"
+            result["reputation"] = "TEST_ADDRESS"
+
+            results.append(result)
+
+            findings.extend(
+                result["findings"]
+            )
+
+            continue
+
+        # ----------------------------------------------------
+        # Non-routable addresses
+        # ----------------------------------------------------
+
+        if classification["status"] == "NON_ROUTABLE":
 
             private_count += 1
 
-
-        for finding in result.get(
-            "findings",
-            []
-        ):
-
-            findings.append(
-                f"{ip}: {finding}"
+            result = build_non_routable_result(
+                ip,
+                classification
             )
 
+            results.append(result)
 
-    # ========================================================
-    # FINAL RESPONSE
-    # ========================================================
+            findings.extend(
+                result["findings"]
+            )
+
+            continue
+
+        # ----------------------------------------------------
+        # Public IP
+        # ----------------------------------------------------
+
+        public_count += 1
+
+        lookup_ip = ip
+
+        six_to_four = classification.get(
+            "six_to_four"
+        )
+
+        # For public 6to4, use embedded IPv4
+        # as an additional lookup source.
+        if (
+            six_to_four
+            and six_to_four.get("embedded_public")
+        ):
+
+            lookup_ip = six_to_four[
+                "embedded_ipv4"
+            ]
+
+        reverse = reverse_dns(
+            lookup_ip
+        )
+
+        data = lookup_ipwho(
+            lookup_ip
+        )
+
+        if data.get("success"):
+
+            result = normalize_provider_result(
+                ip=ip,
+                data=data,
+                classification=classification,
+                reverse_dns_value=reverse
+            )
+
+            # Preserve original IPv6 classification
+            if six_to_four:
+
+                result["type"] = (
+                    "6to4 / Derived IPv6"
+                )
+
+                result["findings"] = unique(
+                    result.get("findings", [])
+                    + [
+                        "GeoIP information was obtained using the embedded public IPv4."
+                    ]
+                )
+
+                result["derived_ipv4"] = lookup_ip
+
+        else:
+
+            result = {
+                "ip": ip,
+
+                "ip_version":
+                    f"IPv{ip_obj.version}",
+
+                "type":
+                    classification.get(
+                        "type",
+                        "Public"
+                    ),
+
+                "status":
+                    "GEOIP_UNAVAILABLE",
+
+                "confidence":
+                    "LOW",
+
+                "country":
+                    "Unavailable",
+
+                "country_code":
+                    "N/A",
+
+                "region":
+                    "Unavailable",
+
+                "city":
+                    "Unavailable",
+
+                "postal":
+                    "Unavailable",
+
+                "latitude":
+                    None,
+
+                "longitude":
+                    None,
+
+                "timezone":
+                    "Unavailable",
+
+                "organization":
+                    "Unavailable",
+
+                "isp":
+                    "Unavailable",
+
+                "asn":
+                    "Unavailable",
+
+                "reverse_dns":
+                    reverse or "Unavailable",
+
+                "domain":
+                    "Unavailable",
+
+                "reputation":
+                    "UNKNOWN",
+
+                "security": {
+                    "vpn": False,
+                    "proxy": False,
+                    "tor": False,
+                    "hosting": False,
+                    "threat": None
+                },
+
+                "findings": [
+                    "Public IP detected.",
+                    "GeoIP provider did not return location data.",
+                    f"Provider message: {data.get('error', 'Unknown error')}."
+                ],
+
+                "analyzed_at":
+                    utc_now(),
+
+                "provider":
+                    PROVIDER_NAME
+            }
+
+        results.append(result)
+
+        findings.extend(
+            result.get(
+                "findings",
+                []
+            )
+        )
+
+        security = result.get(
+            "security",
+            {}
+        )
+
+        if (
+            security.get("threat")
+            or security.get("tor")
+            or security.get("proxy")
+            or security.get("vpn")
+        ):
+
+            suspicious_count += 1
+
+    # --------------------------------------------------------
+    # Invalid inputs
+    # --------------------------------------------------------
+
+    for rejected_ip in rejected:
+
+        findings.append(
+            f"Rejected invalid IP candidate: {rejected_ip}"
+        )
+
+    # --------------------------------------------------------
+    # Final response
+    # --------------------------------------------------------
 
     return {
 
-        "status":
-            (
-                "ANALYZED"
-                if results
-                else "NO_IPS"
-            ),
+        "status": "ANALYZED",
 
-        "total":
-            len(results),
+        "total": len(results),
 
-        "public_count":
-            public_count,
+        "public_count": public_count,
 
-        "private_count":
-            private_count,
+        "private_count": private_count,
 
         "documentation_count":
             documentation_count,
 
         "suspicious_count":
-            0,
+            suspicious_count,
 
-        "results":
-            results,
+        "results": results,
 
         "findings":
-            _unique(findings),
+            unique(findings),
 
         "engine": {
 
@@ -838,7 +1018,10 @@ def analyze_ips(ip_input):
                 "TARVEX26 GeoIP Intelligence Engine",
 
             "version":
-                "2.0",
+                PROVIDER_VERSION,
+
+            "provider":
+                PROVIDER_NAME,
 
             "capabilities": [
 
@@ -864,22 +1047,31 @@ def analyze_ips(ip_input):
 
                 "Reverse DNS",
 
+                "6to4 detection",
+
                 "Private IP detection",
 
                 "Documentation IP detection",
 
+                "VPN indicator detection",
+
+                "Proxy indicator detection",
+
+                "Tor indicator detection",
+
+                "Hosting indicator detection",
+
                 "False attribution prevention"
+
             ],
 
-            "provider":
-                "ipwho.is",
-
-            "note":
-                "Documentation and private addresses are never assigned real-world geographic locations."
+            "note": (
+                "TARVEX26 does not assign geographic "
+                "locations to private, reserved, "
+                "documentation or non-routable addresses."
+            )
         },
 
         "analyzed_at":
-            datetime.now(
-                timezone.utc
-            ).isoformat()
+            utc_now()
     }
