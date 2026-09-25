@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import InfrastructureGraph from "./InfrastructureGraph";
+import ThreatIntelligencePanel from "./ThreatIntelligencePanel";
 import GeoLocationMap from "./GeoLocationMap";
+import Dashboard from "./Dashboard";
 
 import {
   ShieldCheck,
@@ -1121,6 +1123,19 @@ function App() {
           />
 
         )}
+        <button
+  className={
+    activeAnalysisSection === "dashboard"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setActiveAnalysisSection("dashboard")
+  }
+>
+  <Activity size={14} />
+  DASHBOARD
+</button>
 
 
         {/* =================================================
@@ -1594,6 +1609,16 @@ function App() {
               </motion.section>
 
             )}
+            {analysis &&
+  activeAnalysisSection === "dashboard" && (
+    <motion.section
+      className="forensics-section"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <Dashboard analysis={analysis} />
+    </motion.section>
+)}
 
 
             {/* =================================================
@@ -1725,6 +1750,24 @@ function App() {
                   <Network size={15} />
                   <span>CORRELATION</span>
                 </button>
+                <button
+  className={
+    activeAnalysisSection === "threat-intelligence"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setActiveAnalysisSection("threat-intelligence")
+  }
+>
+
+  <ShieldAlert size={15} />
+
+  <span>
+    THREAT INTEL
+  </span>
+
+</button>
 
                 <button
                   className={
@@ -1894,6 +1937,14 @@ function App() {
                       setActiveAnalysisSection("threat")
                     }
                   />
+                  <FeatureCard
+  icon={<Globe size={21} />}
+  title="Threat Intelligence"
+  description="Correlate IP, domain and URL reputation intelligence."
+  onClick={() =>
+    setActiveAnalysisSection("threat-intelligence")
+  }
+/>
 
 
                   <FeatureCard
@@ -2098,6 +2149,32 @@ function App() {
               </motion.section>
 
             )}
+{/* =================================================
+    THREAT INTELLIGENCE
+================================================= */}
+
+{analysis &&
+  activeAnalysisSection === "threat-intelligence" && (
+
+  <motion.section
+    className="forensics-section"
+    initial={{
+      opacity: 0,
+      y: 20
+    }}
+    animate={{
+      opacity: 1,
+      y: 0
+    }}
+  >
+
+    <ThreatIntelligencePanel
+      analysis={analysis}
+    />
+
+  </motion.section>
+
+)}
 
 
             {/* =================================================
@@ -2962,7 +3039,8 @@ function App() {
                 <>
                   <div className="origin-grid">
                     <div className="origin-card"><div className="origin-card-header"><span>DOMAIN</span><strong>{analysis.domain_intelligence.domain || "Unknown"}</strong></div><div className="origin-details"><div><span>STATUS</span><p>{analysis.domain_intelligence.status || "N/A"}</p></div><div><span>IPv4</span><p>{analysis.domain_intelligence.dns?.A?.join(", ") || "None"}</p></div><div><span>IPv6</span><p>{analysis.domain_intelligence.dns?.AAAA?.join(", ") || "None"}</p></div><div><span>MX</span><p>{analysis.domain_intelligence.dns?.MX?.join(", ") || "None"}</p></div><div><span>NAMESERVERS</span><p>{analysis.domain_intelligence.dns?.NS?.join(", ") || "None"}</p></div></div></div>
-                    <div className="origin-card"><div className="origin-card-header"><span>EMAIL AUTHENTICATION</span><strong>DNS SECURITY</strong></div><div className="origin-details"><div><span>SPF</span><p>{analysis.domain_intelligence.spf?.status || "UNKNOWN"}</p></div><div><span>DKIM</span><p>{analysis.domain_intelligence.dkim?.status || "UNKNOWN"}</p></div><div><span>DMARC</span><p>{analysis.domain_intelligence.dmarc?.status || "UNKNOWN"}</p></div></div></div>
+                    <div className="
+                    -card"><div className="origin-card-header"><span>EMAIL AUTHENTICATION</span><strong>DNS SECURITY</strong></div><div className="origin-details"><div><span>SPF</span><p>{analysis.domain_intelligence.spf?.status || "UNKNOWN"}</p></div><div><span>DKIM</span><p>{analysis.domain_intelligence.dkim?.status || "UNKNOWN"}</p></div><div><span>DMARC</span><p>{analysis.domain_intelligence.dmarc?.status || "UNKNOWN"}</p></div></div></div>
                     <div className="origin-card"><div className="origin-card-header"><span>REGISTRATION</span><strong>{analysis.domain_intelligence.rdap?.status || "N/A"}</strong></div><div className="origin-details"><div><span>REGISTRAR</span><p>{analysis.domain_intelligence.rdap?.registrar || "Unavailable"}</p></div><div><span>HANDLE</span><p>{analysis.domain_intelligence.rdap?.handle || "N/A"}</p></div><div><span>REGISTERED</span><p>{analysis.domain_intelligence.rdap?.events?.find((e) => e.eventAction === "registration")?.eventDate || "N/A"}</p></div><div><span>EXPIRES</span><p>{analysis.domain_intelligence.rdap?.events?.find((e) => e.eventAction === "expiration")?.eventDate || "N/A"}</p></div></div></div>
                     <div className="origin-card"><div className="origin-card-header"><span>INFRASTRUCTURE</span><strong>{analysis.domain_intelligence.infrastructure?.ipv4_count ?? 0} IPv4</strong></div><div className="origin-details"><div><span>IPv4 COUNT</span><p>{analysis.domain_intelligence.infrastructure?.ipv4_count ?? 0}</p></div><div><span>IPv6 COUNT</span><p>{analysis.domain_intelligence.infrastructure?.ipv6_count ?? 0}</p></div><div><span>MX COUNT</span><p>{analysis.domain_intelligence.infrastructure?.mx_count ?? 0}</p></div><div><span>NS COUNT</span><p>{analysis.domain_intelligence.infrastructure?.nameserver_count ?? 0}</p></div></div></div>
                   </div>

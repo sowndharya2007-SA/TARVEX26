@@ -31,6 +31,7 @@ from email.utils import parseaddr
 
 import hashlib
 import inspect
+import ipaddress
 import re
 import uuid
 from datetime import datetime, timezone
@@ -201,42 +202,54 @@ def extract_domains_from_text(text):
         return []
 
 
-def extract_ips_from_text(text):
-    """
-    Extract IPv4 addresses from arbitrary text.
-    """
-
-    if not text:
-        return []
-
-    pattern = (
-        r"\b"
-        r"(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)"
-        r"(?:\."
-        r"(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}"
-        r"\b"
-    )
-
-    try:
-        return unique_list(re.findall(pattern, str(text)))
-    except Exception:
-        return []
-
-
 def extract_urls_from_text(text):
-    """
-    Extract HTTP/HTTPS URLs from email body.
-    """
-
+    """Extract HTTP/HTTPS and www URLs from email text."""
     if not text:
         return []
 
-    pattern = r"https?://[^\s<>\"]+"
+    pattern = r'https?://[^\s<>"\']+|www\.[^\s<>"\']+'
 
     try:
-        return unique_list(re.findall(pattern, str(text)))
+        matches = re.findall(pattern, str(text), flags=re.IGNORECASE)
     except Exception:
         return []
+
+    urls = []
+    for url in matches:
+        url = url.strip().rstrip(".,;:!?)]}>")
+        if url and url not in urls:
+            urls.append(url)
+
+    return urls
+
+
+def normalize_ip_list(values):
+    """Strictly validate IP candidates before forensic analysis."""
+    if not values:
+        return []
+    result=[]
+    for value in values:
+        if value is None:
+            continue
+        value=safe_text(value).strip().strip("[]")
+        if not value:
+            continue
+        try:
+            normalized=str(ipaddress.ip_address(value))
+            if normalized not in result:
+                result.append(normalized)
+        except ValueError:
+            continue
+    return result
+
+def extract_ips_from_text(text):
+    """Extract and strictly validate IPv4/IPv6 candidates."""
+    if not text:
+        return []
+    text=safe_text(text)
+    ipv4=re.findall(r"(?<![0-9])(?:\d{1,3}\.){3}\d{1,3}(?![0-9])",text)
+    ipv6=re.findall(r"(?<![A-Za-z0-9])(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(?![A-Za-z0-9])",text)
+    return normalize_ip_list(ipv4+ipv6)
 
 
 # ============================================================
@@ -492,6 +505,8 @@ def run_header_analysis(message, headers):
         ),
         "authentication_results": {},
     }
+
+
 # ============================================================
 # THREAT ANALYZER WRAPPER
 # ============================================================
@@ -507,48 +522,23 @@ def run_threat_analysis(
     """
     Run TARVEX26 threat analysis using the parsed email message.
 
-    The threat analyzer is designed to inspect the actual
-    email message object together with normalized headers.
+    The threat analyzer extracts the actual subject/body from the
+    parsed email object, so the complete message must be passed in.
     """
 
     attempts = [
-
-        # ----------------------------------------------------
-        # PRIMARY METHOD
-        # Use the parsed email message directly.
-        # This allows the analyzer to inspect:
-        # - subject
-        # - body
-        # - URLs
-        # - MIME parts
-        # - attachments
-        # ----------------------------------------------------
+        lambda: analyze_threat(
+            message=message,
+            headers=headers
+        ),
 
         lambda: analyze_threat(
             message,
             headers
         ),
 
-        # ----------------------------------------------------
-        # SECONDARY METHOD
-        # Explicitly provide the extracted body as message text.
-        # ----------------------------------------------------
-
-        lambda: analyze_threat(
-            body,
-            headers
-        ),
-
-        # ----------------------------------------------------
-        # FALLBACK
-        # ----------------------------------------------------
-
         lambda: analyze_threat(
             message
-        ),
-
-        lambda: analyze_threat(
-            body
         ),
     ]
 
@@ -557,47 +547,32 @@ def run_threat_analysis(
     for attempt in attempts:
 
         try:
-
             result = attempt()
 
-            if isinstance(result, dict):
-
+            if result is not None:
                 return result
 
         except Exception as error:
-
             last_error = error
 
     return {
         "classification": "UNKNOWN",
-
         "threat_score": 0,
-
         "fraud_score": 0,
-
         "score": 0,
-
         "risk_level": "UNKNOWN",
-
         "confidence": 0,
-
-        "summary":
-            "Threat analysis could not be completed.",
-
+        "summary": "Threat analysis could not be completed.",
         "indicators": [
-            f"Threat analyzer error: {str(last_error)}"
+            "Threat analyzer could not process the email."
         ],
-
-        "engine": {
-            "name":
-                "TARVEX26 Threat Analysis Engine",
-
-            "version":
-                "1.0",
-
-            "status":
-                "ERROR"
-        }
+        "score_breakdown": {
+            "content_score": 0,
+            "header_score": 0,
+            "threat_score": 0
+        },
+        "nlp_analysis": {},
+        "error": str(last_error) if last_error else "Unknown error"
     }
 
 
@@ -784,40 +759,34 @@ def run_url_intelligence(body):
 # ============================================================
 
 def run_ip_intelligence(ip_addresses):
-
-    try:
-
-        result = analyze_ip_intelligence(
-            ip_addresses
-        )
-
-        if result is not None:
-            return result
-
-    except Exception as error:
-
+    clean_ips=normalize_ip_list(ip_addresses)
+    if not clean_ips:
         return {
-            "status": "ERROR",
-            "total": len(ip_addresses),
-            "public_count": 0,
-            "private_count": 0,
-            "documentation_count": 0,
-            "suspicious_count": 0,
-            "results": [],
-            "findings": [
-                f"IP intelligence error: {str(error)}"
-            ]
+            "status":"NO_IPS", "total":0, "ip_addresses":[],
+            "public_count":0, "private_count":0, "documentation_count":0,
+            "suspicious_count":0, "results":[],
+            "findings":["No valid IP addresses were extracted from the email."],
+            "engine":{"name":"TARVEX26 IP Intelligence Engine","version":"1.0"}
         }
-
+    try:
+        result=analyze_ip_intelligence(clean_ips)
+        if isinstance(result,dict):
+            result.setdefault("ip_addresses",clean_ips)
+            result.setdefault("total",len(clean_ips))
+            return result
+    except Exception as error:
+        return {
+            "status":"ERROR", "total":len(clean_ips), "ip_addresses":clean_ips,
+            "public_count":0, "private_count":0, "documentation_count":0,
+            "suspicious_count":0, "results":[],
+            "findings":[f"IP intelligence error: {str(error)}"],
+            "engine":{"name":"TARVEX26 IP Intelligence Engine","version":"1.0"}
+        }
     return {
-        "status": "NO_IPS" if not ip_addresses else "ANALYZED",
-        "total": len(ip_addresses),
-        "public_count": 0,
-        "private_count": 0,
-        "documentation_count": 0,
-        "suspicious_count": 0,
-        "results": [],
-        "findings": []
+        "status":"ANALYZED", "total":len(clean_ips), "ip_addresses":clean_ips,
+        "public_count":0, "private_count":0, "documentation_count":0,
+        "suspicious_count":0, "results":[], "findings":[],
+        "engine":{"name":"TARVEX26 IP Intelligence Engine","version":"1.0"}
     }
 
 
@@ -1098,6 +1067,29 @@ def build_forensic_data(
 
     domains = unique_list(domains)
 
+    # --------------------------------------------------------
+    # AUTHENTICATION SUMMARY FOR FRONTEND
+    # --------------------------------------------------------
+
+    auth_raw = headers.get("authentication_results", "")
+
+    if isinstance(auth_raw, list):
+        auth_raw = "\n".join(str(x) for x in auth_raw)
+
+    auth_raw = safe_text(auth_raw)
+
+    def parse_auth_result(name):
+        match = re.search(
+            rf"\b{name}\s*=\s*(pass|fail|softfail|neutral|none|temperror|permerror|bestguesspass)\b",
+            auth_raw,
+            re.IGNORECASE
+        )
+        return match.group(1).upper() if match else "NOT PRESENT"
+
+    spf_result = parse_auth_result("spf")
+    dkim_result = parse_auth_result("dkim")
+    dmarc_result = parse_auth_result("dmarc")
+
     return {
         "sender": sender,
         "from": sender,
@@ -1107,6 +1099,12 @@ def build_forensic_data(
         "return_path": return_path,
         "reply_to": reply_to,
         "message_id": message_id,
+
+        # Explicit fields consumed by the React header dashboard.
+        "spf": spf_result,
+        "dkim": dkim_result,
+        "dmarc": dmarc_result,
+        "authentication_results": auth_raw,
 
         "sender_domain": sender_domain,
         "return_path_domain": return_path_domain,
@@ -1201,7 +1199,6 @@ def health():
             "services": {
                 "header_forensics": "ENABLED",
                 "threat_analysis": "ENABLED",
-                "threat_intelligence": "ENABLED",
                 "ip_intelligence": "ENABLED",
                 "geoip_intelligence": "ENABLED",
                 "network_anonymization": (
@@ -1423,54 +1420,27 @@ def analyze_email():
 
     ip_addresses = []
 
-    ip_addresses.extend(
-        extract_ips_from_text(
-            "\n".join(
-                received_analysis.get(
-                    "received_headers",
-                    []
-                )
-            )
-        )
-    )
+    # Received relay headers are the primary forensic source.
+    ip_addresses.extend(extract_ips_from_text("\n".join(received_analysis.get("received_headers", []))))
 
-    ip_addresses.extend(
-        extract_ips_from_text(
-            safe_text(
-                headers.get(
-                    "x_originating_ip"
-                )
-            )
-        )
-    )
+    # Explicit originating/forwarding headers.
+    ip_addresses.extend(extract_ips_from_text(safe_text(headers.get("x_originating_ip"))))
+    ip_addresses.extend(extract_ips_from_text(safe_text(headers.get("x_forwarded_for"))))
 
-    ip_addresses.extend(
-        extract_ips_from_text(
-            safe_text(
-                headers.get(
-                    "x_forwarded_for"
-                )
-            )
-        )
-    )
+    # Header analyzer output, when available.
+    analyzer_ips = header_analysis.get("ip_addresses", []) if isinstance(header_analysis, dict) else []
+    if isinstance(analyzer_ips, list):
+        ip_addresses.extend(analyzer_ips)
 
-    # Some header analyzers may already have extracted IPs.
-    analyzer_ips = header_analysis.get(
-        "ip_addresses",
-        []
-    )
+    # Final fallback: scan the complete raw .eml content.
+    try:
+        raw_email_text=email_bytes.decode("utf-8",errors="replace")
+        ip_addresses.extend(extract_ips_from_text(raw_email_text))
+    except Exception:
+        pass
 
-    if isinstance(
-        analyzer_ips,
-        list
-    ):
-        ip_addresses.extend(
-            analyzer_ips
-        )
-
-    ip_addresses = unique_list(
-        ip_addresses
-    )
+    # Strict validation before any intelligence engine receives the data.
+    ip_addresses=normalize_ip_list(ip_addresses)
 
     # --------------------------------------------------------
     # DOMAINS
@@ -1607,14 +1577,15 @@ def analyze_email():
     # --------------------------------------------------------
     # THREAT ANALYSIS
     # --------------------------------------------------------
+
     threat_analysis = run_threat_analysis(
-    message,
-    subject,
-    combined_body,
-    headers,
-    url_analysis,
-    attachment_analysis
-)
+        message,
+        subject,
+        combined_body,
+        headers,
+        url_analysis,
+        attachment_analysis
+    )
 
     # --------------------------------------------------------
     # DOMAIN INTELLIGENCE
@@ -1631,41 +1602,40 @@ def analyze_email():
             sender_domain
         )
     )
+# --------------------------------------------------------
+# THREAT INTELLIGENCE & REPUTATION
+# --------------------------------------------------------
 
-    # --------------------------------------------------------
-    # THREAT INTELLIGENCE & REPUTATION
-    # --------------------------------------------------------
+try:
 
-    try:
+    threat_intelligence = analyze_threat_intelligence(
+        geoip_intelligence=geoip_intelligence,
+        domain_intelligence=domain_intelligence,
+        url_intelligence=url_analysis
+    )
 
-        threat_intelligence = analyze_threat_intelligence(
-            geoip_intelligence=geoip_intelligence,
-            domain_intelligence=domain_intelligence,
-            url_intelligence=url_analysis
-        )
+except Exception as error:
 
-    except Exception as error:
-
-        threat_intelligence = {
-            "overall_status": "UNAVAILABLE",
-            "confidence": 0,
-            "counts": {
-                "malicious": 0,
-                "suspicious": 0,
-                "no_indicators": 0,
-                "unknown": 0,
-                "unavailable": 1
-            },
-            "indicators": [],
-            "findings": [
-                f"Threat intelligence analysis unavailable: {str(error)}"
-            ],
-            "engine": {
-                "name": "TARVEX26 Threat Intelligence Engine",
-                "version": "1.0",
-                "status": "ERROR"
-            }
+    threat_intelligence = {
+        "overall_status": "UNAVAILABLE",
+        "confidence": 0,
+        "counts": {
+            "malicious": 0,
+            "suspicious": 0,
+            "no_indicators": 0,
+            "unknown": 0,
+            "unavailable": 1
+        },
+        "indicators": [],
+        "findings": [
+            f"Threat intelligence analysis unavailable: {str(error)}"
+        ],
+        "engine": {
+            "name": "TARVEX26 Threat Intelligence Engine",
+            "version": "1.0",
+            "status": "ERROR"
         }
+    }
 
     # --------------------------------------------------------
     # CORRELATION ANALYSIS
@@ -1900,14 +1870,6 @@ def analyze_email():
         ),
 
         "threat_score": threat_score,
-
-        # ====================================================
-        # THREAT INTELLIGENCE
-        # ====================================================
-
-        "threat_intelligence": (
-            threat_intelligence
-        ),
 
         # ====================================================
         # IP
@@ -2167,10 +2129,6 @@ if __name__ == "__main__":
 
     print(
         "Threat Analysis       : ENABLED"
-    )
-
-    print(
-        "Threat Intelligence   : ENABLED"
     )
 
     print(

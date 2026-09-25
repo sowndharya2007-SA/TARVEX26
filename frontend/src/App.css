@@ -6242,3 +6242,1653 @@ code {
     padding: 17px;
   }
 }
+/* =========================================================
+   TARVEX26 THREAT INTELLIGENCE
+========================================================= */
+
+.threat-intelligence-panel {
+  width: 100%;
+  padding: 28px;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 220, 255, 0.16);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(5, 19, 31, 0.94),
+      rgba(2, 10, 18, 0.96)
+    );
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.25),
+    inset 0 0 40px rgba(0, 220, 255, 0.025);
+}
+
+.ti-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.ti-header h2 {
+  margin: 7px 0 8px;
+  font-size: 25px;
+}
+
+.ti-header p {
+  max-width: 680px;
+  margin: 0;
+  opacity: 0.62;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.ti-main-status {
+  min-width: 170px;
+  padding: 15px 17px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+}
+
+.ti-main-status span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  opacity: 0.48;
+  margin-bottom: 4px;
+}
+
+.ti-main-status strong {
+  display: block;
+  font-size: 15px;
+  letter-spacing: 0.8px;
+}
+
+.ti-status-malicious {
+  color: #ff526f;
+}
+
+.ti-status-suspicious {
+  color: #ffb84d;
+}
+
+.ti-status-clean {
+  color: #55e6a5;
+}
+
+.ti-status-unknown {
+  color: #91a7ba;
+}
+
+
+/* =========================================================
+   CONFIDENCE
+========================================================= */
+
+.ti-confidence {
+  margin-bottom: 25px;
+  padding: 17px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.025);
+}
+
+.ti-confidence-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 11px;
+}
+
+.ti-confidence-head span {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  opacity: 0.52;
+}
+
+.ti-confidence-head strong {
+  font-size: 18px;
+}
+
+.ti-confidence-track {
+  height: 6px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.07);
+}
+
+.ti-confidence-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #00d9ff;
+  box-shadow: 0 0 12px rgba(0,217,255,0.45);
+  transition: width 0.7s ease;
+}
+
+
+/* =========================================================
+   COUNTS
+========================================================= */
+
+.ti-count-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.ti-count-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 78px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.025);
+}
+
+.ti-count-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(0,217,255,0.07);
+  color: #00d9ff;
+}
+
+.ti-count-card span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  opacity: 0.48;
+}
+
+.ti-count-card strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+}
+
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+.ti-section {
+  margin-top: 25px;
+}
+
+.ti-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 13px;
+}
+
+.ti-section-title > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ti-section-title > div svg {
+  color: #00d9ff;
+}
+
+.ti-section-title span {
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+}
+
+.ti-section-title small {
+  font-size: 8px;
+  letter-spacing: 1px;
+  opacity: 0.42;
+}
+
+
+/* =========================================================
+   INDICATORS
+========================================================= */
+
+.ti-indicator-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ti-indicator-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,0,0,0.16);
+}
+
+.ti-indicator-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.ti-indicator-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  opacity: 0.5;
+}
+
+.ti-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border-radius: 5px;
+  font-size: 8px;
+  letter-spacing: 0.7px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.035);
+}
+
+.ti-indicator-value {
+  font-size: 14px;
+  font-weight: 700;
+  word-break: break-word;
+  margin-bottom: 8px;
+}
+
+.ti-indicator-finding {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0.62;
+}
+
+.ti-mini-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 10px;
+  opacity: 0.57;
+  word-break: break-word;
+}
+
+.ti-mini-row svg {
+  flex-shrink: 0;
+}
+
+.ti-mini-label {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   FINDINGS
+========================================================= */
+
+.ti-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ti-finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.018);
+}
+
+.ti-finding-marker {
+  min-width: 23px;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #00d9ff;
+  padding-top: 2px;
+}
+
+.ti-finding p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+
+.ti-no-data {
+  padding: 18px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,0.08);
+  opacity: 0.45;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   ENGINE
+========================================================= */
+
+.ti-engine {
+  margin-top: 26px;
+  padding: 15px 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  border-radius: 11px;
+  border: 1px solid rgba(0,217,255,0.10);
+  background: rgba(0,217,255,0.025);
+}
+
+.ti-engine span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  opacity: 0.43;
+}
+
+.ti-engine strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.ti-engine-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 8px;
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+
+/* =========================================================
+   FORENSIC NOTE
+========================================================= */
+
+.ti-note {
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(0,217,255,0.08);
+  background: rgba(0,217,255,0.025);
+}
+
+.ti-note svg {
+  flex-shrink: 0;
+  color: #00d9ff;
+}
+
+.ti-note p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.55;
+  opacity: 0.52;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.ti-empty {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px dashed rgba(0,217,255,0.15);
+  background: rgba(0,20,35,0.4);
+}
+
+.ti-empty svg {
+  color: #00d9ff;
+  margin-bottom: 13px;
+}
+
+.ti-empty h3 {
+  margin: 0 0 7px;
+}
+
+.ti-empty p {
+  max-width: 450px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0.52;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .threat-intelligence-panel {
+    padding: 18px;
+  }
+
+  .ti-header {
+    flex-direction: column;
+  }
+
+  .ti-main-status {
+    width: 100%;
+  }
+
+  .ti-count-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .ti-indicator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ti-engine {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .ti-count-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ti-header h2 {
+    font-size: 20px;
+  }
+
+}
+/* =========================================================
+   TARVEX26 - THREAT INTELLIGENCE PANEL
+   ========================================================= */
+
+.threat-intelligence-panel {
+  width: 100%;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(0, 217, 255, 0.06), transparent 30%),
+    radial-gradient(circle at 85% 80%, rgba(0, 217, 255, 0.04), transparent 35%),
+    #020a11;
+  border: 1px solid rgba(0, 217, 255, 0.22);
+  border-radius: 14px;
+  padding: 28px;
+  box-sizing: border-box;
+  color: #e8faff;
+}
+
+/* HEADER */
+
+.ti-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.14);
+}
+
+.ti-kicker {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #00d9ff;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.ti-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  color: #f1fbff;
+}
+
+.ti-header p {
+  margin: 7px 0 0;
+  color: #7f9aa8;
+  font-size: 13px;
+}
+
+/* STATUS */
+
+.ti-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.ti-status.connected {
+  color: #00e6a8;
+  background: rgba(0, 230, 168, 0.08);
+  border-color: rgba(0, 230, 168, 0.25);
+}
+
+.ti-status.clean {
+  color: #00e6a8;
+  background: rgba(0, 230, 168, 0.07);
+  border-color: rgba(0, 230, 168, 0.2);
+}
+
+.ti-status.malicious {
+  color: #ff4d67;
+  background: rgba(255, 77, 103, 0.1);
+  border-color: rgba(255, 77, 103, 0.3);
+}
+
+.ti-status.suspicious {
+  color: #ffb84d;
+  background: rgba(255, 184, 77, 0.1);
+  border-color: rgba(255, 184, 77, 0.3);
+}
+
+.ti-status.unknown {
+  color: #9aaeb8;
+  background: rgba(150, 170, 180, 0.08);
+  border-color: rgba(150, 170, 180, 0.18);
+}
+
+/* OVERVIEW */
+
+.ti-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.ti-overview-card {
+  background: rgba(5, 20, 29, 0.82);
+  border: 1px solid rgba(0, 217, 255, 0.13);
+  border-radius: 9px;
+  padding: 16px;
+  min-height: 70px;
+  box-sizing: border-box;
+}
+
+.ti-overview-card span {
+  display: block;
+  color: #718a97;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.ti-overview-card strong {
+  display: block;
+  color: #e9fbff;
+  font-size: 17px;
+}
+
+/* SECTIONS */
+
+.ti-section {
+  margin-top: 24px;
+}
+
+.ti-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #c9eaf2;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.ti-section-title svg {
+  color: #00d9ff;
+}
+
+/* EXTERNAL SOURCE */
+
+.ti-source-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 217, 255, 0.06),
+    rgba(5, 20, 29, 0.8)
+  );
+  border: 1px solid rgba(0, 217, 255, 0.18);
+  border-radius: 10px;
+  padding: 17px;
+}
+
+.ti-source-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(0, 217, 255, 0.08);
+  color: #00d9ff;
+  border: 1px solid rgba(0, 217, 255, 0.18);
+}
+
+.ti-source-main {
+  flex: 1;
+}
+
+.ti-source-main h3 {
+  margin: 0 0 4px;
+  color: #eefcff;
+  font-size: 15px;
+}
+
+.ti-source-main p {
+  margin: 0;
+  color: #718b98;
+  font-size: 11px;
+}
+
+/* THREATFOX STATS */
+
+.ti-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ti-stats > div {
+  padding: 13px;
+  border-radius: 8px;
+  background: rgba(3, 14, 21, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.ti-stats span {
+  display: block;
+  font-size: 9px;
+  color: #718a97;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.ti-stats strong {
+  font-size: 15px;
+  color: #dffaff;
+}
+
+/* CORRELATION COUNTS */
+
+.ti-count-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.ti-count {
+  padding: 15px;
+  border-radius: 9px;
+  background: rgba(4, 16, 24, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.ti-count span {
+  display: block;
+  font-size: 10px;
+  color: #78919d;
+  margin-bottom: 7px;
+}
+
+.ti-count strong {
+  font-size: 20px;
+}
+
+.malicious-count strong {
+  color: #ff4d67;
+}
+
+.suspicious-count strong {
+  color: #ffb84d;
+}
+
+.clean-count strong {
+  color: #00e6a8;
+}
+
+.unknown-count strong {
+  color: #a5b6bd;
+}
+
+/* INDICATORS */
+
+.ti-indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.ti-indicator-card {
+  background: rgba(4, 16, 24, 0.92);
+  border: 1px solid rgba(0, 217, 255, 0.14);
+  border-radius: 10px;
+  padding: 17px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.ti-indicator-card:hover {
+  border-color: rgba(0, 217, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.ti-indicator-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ti-indicator-type {
+  display: block;
+  color: #00d9ff;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.ti-indicator-top h3 {
+  margin: 0;
+  color: #eefcff;
+  font-size: 15px;
+  word-break: break-word;
+}
+
+/* INDICATOR DETAILS */
+
+.ti-indicator-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ti-indicator-details > div {
+  padding: 9px;
+  background: rgba(0, 217, 255, 0.025);
+  border-radius: 6px;
+}
+
+.ti-indicator-details span,
+.ti-match span {
+  display: block;
+  color: #637d89;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 4px;
+}
+
+.ti-indicator-details strong,
+.ti-match strong {
+  display: block;
+  color: #cfeaf0;
+  font-size: 10px;
+  word-break: break-word;
+}
+
+/* THREATFOX INDICATOR AREA */
+
+.ti-external {
+  border-top: 1px solid rgba(0, 217, 255, 0.1);
+  padding-top: 12px;
+}
+
+.ti-external-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #9db6c0;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ti-external-header svg {
+  color: #00d9ff;
+}
+
+.ti-external-header .ti-status {
+  margin-left: auto;
+  min-width: auto;
+  padding: 4px 7px;
+  font-size: 7px;
+}
+
+/* NO MATCH */
+
+.ti-no-match {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 9px;
+  border-radius: 6px;
+  background: rgba(0, 230, 168, 0.035);
+  color: #819ba6;
+  font-size: 10px;
+}
+
+.ti-no-match svg {
+  color: #00e6a8;
+}
+
+/* MATCH */
+
+.ti-match-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ti-match {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+  padding: 10px;
+  border-radius: 7px;
+  background: rgba(255, 77, 103, 0.05);
+  border: 1px solid rgba(255, 77, 103, 0.15);
+}
+
+/* FINDINGS */
+
+.ti-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ti-finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 13px;
+  background: rgba(4, 16, 24, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+  border-radius: 7px;
+  color: #9cb3bd;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ti-finding svg {
+  flex-shrink: 0;
+  color: #00d9ff;
+  margin-top: 1px;
+}
+
+/* EMPTY */
+
+.ti-empty {
+  padding: 20px;
+  border: 1px dashed rgba(0, 217, 255, 0.18);
+  border-radius: 8px;
+  color: #6f8995;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* ENGINE */
+
+.ti-engine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 25px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(0, 217, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+  color: #6f8995;
+  font-size: 9px;
+}
+
+.ti-engine > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #00d9ff;
+}
+
+.ti-engine strong {
+  color: #abc4cd;
+}
+
+.ti-engine span:last-child {
+  margin-left: auto;
+}
+
+/* NOTE */
+
+.ti-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 7px;
+  background: rgba(255, 184, 77, 0.035);
+  border: 1px solid rgba(255, 184, 77, 0.1);
+  color: #748b95;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.ti-note svg {
+  flex-shrink: 0;
+  color: #ffb84d;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .ti-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .ti-count-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ti-indicator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ti-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .threat-intelligence-panel {
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  .ti-header {
+    flex-direction: column;
+  }
+
+  .ti-header h2 {
+    font-size: 20px;
+  }
+
+  .ti-count-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ti-indicator-details {
+    grid-template-columns: 1fr;
+  }
+
+  .ti-match {
+    grid-template-columns: 1fr;
+  }
+
+  .ti-engine {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ti-engine span:last-child {
+    margin-left: 0;
+  }
+}
+/* =========================================================
+   TARVEX26 FORENSIC DASHBOARD
+   ========================================================= */
+
+.tarvex-dashboard {
+  width: 100%;
+  background:
+    radial-gradient(
+      circle at 10% 5%,
+      rgba(0, 217, 255, 0.05),
+      transparent 28%
+    ),
+    #020a11;
+  border: 1px solid rgba(0, 217, 255, 0.18);
+  border-radius: 14px;
+  padding: 26px;
+  box-sizing: border-box;
+  color: #e9faff;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.12);
+}
+
+.dashboard-kicker {
+  color: #00d9ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 7px;
+}
+
+.dashboard-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 24px;
+}
+
+.dashboard-header h2 svg {
+  color: #00d9ff;
+}
+
+.dashboard-header p {
+  margin: 7px 0 0;
+  color: #718995;
+  font-size: 12px;
+}
+
+.dashboard-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid rgba(0, 230, 168, 0.25);
+  border-radius: 5px;
+  color: #00e6a8;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.dashboard-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00e6a8;
+  box-shadow: 0 0 8px rgba(0, 230, 168, 0.8);
+}
+
+/* METRICS */
+
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11px;
+  margin: 20px 0;
+}
+
+.dashboard-metric {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 9px;
+  background: rgba(4, 17, 25, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.12);
+}
+
+.dashboard-metric-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 217, 255, 0.06);
+  color: #00d9ff;
+}
+
+.dashboard-metric-content span {
+  display: block;
+  color: #708894;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 5px;
+}
+
+.dashboard-metric-content strong {
+  display: block;
+  color: #effcff;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.dashboard-metric-content small {
+  display: block;
+  color: #617985;
+  font-size: 8px;
+  margin-top: 4px;
+}
+
+.danger-card {
+  border-color: rgba(255, 77, 103, 0.22);
+}
+
+.danger-card .dashboard-metric-icon {
+  color: #ff4d67;
+}
+
+.warning-card {
+  border-color: rgba(255, 184, 77, 0.2);
+}
+
+.warning-card .dashboard-metric-icon {
+  color: #ffb84d;
+}
+
+.info-card .dashboard-metric-icon {
+  color: #00d9ff;
+}
+
+.success-card {
+  border-color: rgba(0, 230, 168, 0.2);
+}
+
+.success-card .dashboard-metric-icon {
+  color: #00e6a8;
+}
+
+/* SECTIONS */
+
+.dashboard-section {
+  margin-top: 20px;
+}
+
+.dashboard-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: #b8d8e0;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dashboard-section-title svg {
+  color: #00d9ff;
+}
+
+/* AUTH */
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+}
+
+.auth-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: 8px;
+  background: rgba(4, 17, 25, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.auth-card > span {
+  color: #78909b;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.auth-card > strong {
+  color: #bcd6dd;
+  font-size: 9px;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 7px;
+  border-radius: 4px;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  white-space: nowrap;
+}
+
+.dash-badge.success {
+  color: #00e6a8;
+  background: rgba(0, 230, 168, 0.08);
+  border: 1px solid rgba(0, 230, 168, 0.2);
+}
+
+.dash-badge.danger {
+  color: #ff4d67;
+  background: rgba(255, 77, 103, 0.08);
+  border: 1px solid rgba(255, 77, 103, 0.2);
+}
+
+.dash-badge.warning {
+  color: #ffb84d;
+  background: rgba(255, 184, 77, 0.08);
+  border: 1px solid rgba(255, 184, 77, 0.2);
+}
+
+.dash-badge.unknown {
+  color: #9aadb5;
+  background: rgba(150, 170, 180, 0.07);
+  border: 1px solid rgba(150, 170, 180, 0.15);
+}
+
+/* ORIGIN */
+
+.origin-dashboard-card {
+  padding: 18px;
+  border-radius: 9px;
+  background: rgba(4, 17, 25, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.13);
+}
+
+.origin-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.origin-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 217, 255, 0.07);
+  color: #00d9ff;
+}
+
+.origin-main span,
+.origin-details span {
+  display: block;
+  color: #6e8792;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 5px;
+}
+
+.origin-main strong {
+  color: #e9fbff;
+  font-size: 16px;
+}
+
+.origin-details {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.origin-details strong {
+  display: block;
+  color: #c1dce3;
+  font-size: 10px;
+  word-break: break-word;
+}
+
+/* TWO COLUMN */
+
+.dashboard-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+/* URL / ATTACHMENT */
+
+.analysis-summary-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 9px;
+  background: rgba(4, 17, 25, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.11);
+}
+
+.summary-number {
+  color: #00d9ff;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.summary-number span,
+.summary-status span {
+  display: block;
+  margin-top: 4px;
+  color: #6f8792;
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.danger-number {
+  color: #ff4d67;
+}
+
+.summary-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* SUSPICIOUS FILE */
+
+.dashboard-file-warning {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: rgba(255, 77, 103, 0.05);
+  border: 1px solid rgba(255, 77, 103, 0.14);
+}
+
+.dashboard-file-warning svg {
+  color: #ff4d67;
+}
+
+.dashboard-file-warning span {
+  display: block;
+  color: #748c96;
+  font-size: 8px;
+  margin-bottom: 3px;
+}
+
+.dashboard-file-warning strong {
+  color: #e3edf0;
+  font-size: 10px;
+}
+
+/* THREAT INTELLIGENCE */
+
+.dashboard-intel-card {
+  padding: 16px;
+  border-radius: 9px;
+  background: rgba(4, 17, 25, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.13);
+}
+
+.intel-provider {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.intel-icon {
+  width: 39px;
+  height: 39px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #00d9ff;
+  background: rgba(0, 217, 255, 0.07);
+}
+
+.intel-provider > div:nth-child(2) {
+  flex: 1;
+}
+
+.intel-provider span {
+  display: block;
+  color: #708995;
+  font-size: 8px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.intel-provider strong {
+  color: #dff6fa;
+  font-size: 11px;
+}
+
+.intel-numbers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.intel-numbers div {
+  padding: 9px;
+  border-radius: 6px;
+  background: rgba(0, 217, 255, 0.025);
+}
+
+.intel-numbers span {
+  display: block;
+  color: #617985;
+  font-size: 7px;
+  margin-bottom: 4px;
+}
+
+.intel-numbers strong {
+  color: #d5eef2;
+  font-size: 11px;
+}
+
+/* INFRASTRUCTURE */
+
+.infrastructure-summary {
+  display: grid;
+  grid-template-columns: 120px 120px 1fr;
+  gap: 9px;
+}
+
+.infrastructure-summary > div {
+  padding: 15px;
+  border-radius: 8px;
+  background: rgba(4, 17, 25, 0.9);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.infrastructure-summary strong {
+  display: block;
+  color: #00d9ff;
+  font-size: 21px;
+}
+
+.infrastructure-summary span {
+  display: block;
+  margin-top: 4px;
+  color: #6f8792;
+  font-size: 8px;
+}
+
+.infra-description {
+  display: flex;
+  align-items: center;
+}
+
+.infra-description span {
+  line-height: 1.5;
+}
+
+/* FINAL ASSESSMENT */
+
+.dashboard-assessment {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 20px;
+  padding: 17px;
+  border-radius: 9px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 217, 255, 0.05),
+      rgba(4, 17, 25, 0.8)
+    );
+  border: 1px solid rgba(0, 217, 255, 0.16);
+}
+
+.assessment-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 217, 255, 0.07);
+  color: #00d9ff;
+}
+
+.dashboard-assessment span {
+  display: block;
+  color: #718a95;
+  font-size: 8px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.dashboard-assessment strong {
+  color: #eafcff;
+  font-size: 15px;
+}
+
+.dashboard-assessment p {
+  margin: 6px 0 0;
+  color: #748c96;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .dashboard-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .auth-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .origin-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .intel-numbers {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+
+  .tarvex-dashboard {
+    padding: 17px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+  }
+
+  .dashboard-header h2 {
+    font-size: 19px;
+  }
+
+  .dashboard-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .origin-details {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .analysis-summary-card {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .intel-numbers {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .infrastructure-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .infra-description {
+    grid-column: 1 / -1;
+  }
+}

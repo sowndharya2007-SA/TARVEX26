@@ -1,4 +1,3 @@
-@"
 From: security@secure-example.com
 To: victim@target-example.com
 Subject: URGENT: Security Verification Required
@@ -26,4 +25,3 @@ http://verify-secure-example.com/login
 Do not share this message with anyone.
 
 This is a controlled TARVEX26 demonstration email.
-"@ | Set-Content ..\data\forensic_origin_test.eml

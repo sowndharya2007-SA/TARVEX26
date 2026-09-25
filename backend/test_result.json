@@ -1,0 +1,1203 @@
+{
+  "analysis_completed_at": "2026-09-25T17:28:32.171360+00:00",
+  "analysis_started_at": "2026-09-25T17:28:28.751206+00:00",
+  "attachment_analysis": {
+    "attachments": [
+      {
+        "category": "EXECUTABLE",
+        "content_type": "application/octet-stream",
+        "double_extension": true,
+        "extension": ".exe",
+        "filename": "invoice.pdf.exe",
+        "is_archive": false,
+        "is_executable": true,
+        "is_script": false,
+        "risks": [
+          "Potentially executable file",
+          "Suspicious double-extension filename",
+          "Sensitive filename keywords: invoice"
+        ],
+        "size_bytes": 38,
+        "suspicious_keywords": [
+          "invoice"
+        ]
+      }
+    ],
+    "engine": {
+      "analysis_type": "Attachment metadata and risk analysis",
+      "name": "TARVEX26 Attachment Forensics Engine",
+      "version": "1.0"
+    },
+    "findings": [
+      "invoice.pdf.exe: Potentially executable file",
+      "invoice.pdf.exe: Suspicious double-extension filename",
+      "invoice.pdf.exe: Sensitive filename keywords: invoice"
+    ],
+    "risk_level": "HIGH",
+    "suspicious_count": 1,
+    "suspicious_files": [
+      "invoice.pdf.exe"
+    ],
+    "total": 1
+  },
+  "body": {
+    "html": "",
+    "plain": "URGENT ACTION REQUIRED\r\n\r\nYour account has been flagged for security verification.\r\n\r\nPlease verify your account immediately using the following link:\r\n\r\nhttp://verify-secure-example.com/login\r\n\r\nFailure to verify your account within 30 minutes may result in account suspension.\r\n\r\nPlease keep this confidential and do not share this message."
+  },
+  "chain_of_custody": {
+    "case_id": "CASE-20260925-26B19C3F",
+    "chain_of_custody": {
+      "continuity": "INTACT",
+      "event_count": 5,
+      "events": [
+        {
+          "description": "Email evidence file acquired for forensic analysis.",
+          "event_id": "E01",
+          "event_type": "EVIDENCE_ACQUIRED",
+          "status": "COMPLETED",
+          "timestamp": "2026-09-25T17:28:28.751206+00:00"
+        },
+        {
+          "description": "SHA-256 integrity hash generated for acquired evidence.",
+          "event_id": "E02",
+          "event_type": "HASH_GENERATED",
+          "status": "COMPLETED",
+          "timestamp": "2026-09-25T17:28:28.751206+00:00"
+        },
+        {
+          "description": "Original evidence metadata preserved before analysis.",
+          "event_id": "E03",
+          "event_type": "EVIDENCE_PRESERVED",
+          "status": "COMPLETED",
+          "timestamp": "2026-09-25T17:28:28.751206+00:00"
+        },
+        {
+          "description": "Automated TARVEX26 forensic analysis initiated.",
+          "event_id": "E04",
+          "event_type": "FORENSIC_ANALYSIS_STARTED",
+          "status": "COMPLETED",
+          "timestamp": "2026-09-25T17:28:28.751206+00:00"
+        },
+        {
+          "description": "TARVEX26 forensic analysis completed.",
+          "event_id": "E05",
+          "event_type": "FORENSIC_ANALYSIS_COMPLETED",
+          "status": "COMPLETED",
+          "timestamp": "2026-09-25T17:28:32.171360+00:00"
+        }
+      ]
+    },
+    "created_at": "2026-09-25T17:28:28.751206+00:00",
+    "custody": {
+      "acquired_at": "2026-09-25T17:28:28.751206+00:00",
+      "analysis_completed_at": "2026-09-25T17:28:32.171360+00:00",
+      "analysis_started_at": "2026-09-25T17:28:28.751206+00:00",
+      "current_state": "ANALYSIS_COMPLETED",
+      "preserved_at": "2026-09-25T17:28:28.751206+00:00",
+      "status": "PRESERVED"
+    },
+    "engine": {
+      "capabilities": [
+        "Evidence identification",
+        "SHA-256 integrity hashing",
+        "Evidence preservation",
+        "Acquisition timestamp",
+        "Forensic analysis tracking",
+        "Chain-of-custody timeline"
+      ],
+      "name": "TARVEX26 Digital Evidence Chain of Custody",
+      "version": "1.0"
+    },
+    "evidence": {
+      "evidence_type": "EMAIL",
+      "file_size": 1180,
+      "filename": "forensic_test.eml",
+      "hash_algorithm": "SHA-256",
+      "sha256": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231"
+    },
+    "evidence_id": "TRX-20260925-1C5C3D4F",
+    "integrity": {
+      "hash": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231",
+      "hash_algorithm": "SHA-256",
+      "original_hash": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231",
+      "status": "VERIFIED",
+      "verification": "INITIAL_HASH_RECORDED"
+    },
+    "status": "ANALYSIS_COMPLETED",
+    "timeline": [
+      {
+        "description": "Email evidence file acquired for forensic analysis.",
+        "event_id": "E01",
+        "event_type": "EVIDENCE_ACQUIRED",
+        "status": "COMPLETED",
+        "timestamp": "2026-09-25T17:28:28.751206+00:00"
+      },
+      {
+        "description": "SHA-256 integrity hash generated for acquired evidence.",
+        "event_id": "E02",
+        "event_type": "HASH_GENERATED",
+        "status": "COMPLETED",
+        "timestamp": "2026-09-25T17:28:28.751206+00:00"
+      },
+      {
+        "description": "Original evidence metadata preserved before analysis.",
+        "event_id": "E03",
+        "event_type": "EVIDENCE_PRESERVED",
+        "status": "COMPLETED",
+        "timestamp": "2026-09-25T17:28:28.751206+00:00"
+      },
+      {
+        "description": "Automated TARVEX26 forensic analysis initiated.",
+        "event_id": "E04",
+        "event_type": "FORENSIC_ANALYSIS_STARTED",
+        "status": "COMPLETED",
+        "timestamp": "2026-09-25T17:28:28.751206+00:00"
+      },
+      {
+        "description": "TARVEX26 forensic analysis completed.",
+        "event_id": "E05",
+        "event_type": "FORENSIC_ANALYSIS_COMPLETED",
+        "status": "COMPLETED",
+        "timestamp": "2026-09-25T17:28:32.171360+00:00"
+      }
+    ]
+  },
+  "correlation": {
+    "findings": [
+      "Sender and Reply-To domains are different"
+    ],
+    "node_count": 3,
+    "nodes": [
+      {
+        "id": "email",
+        "label": "Email",
+        "type": "email"
+      },
+      {
+        "id": "domain:secure-example.com",
+        "label": "secure-example.com",
+        "type": "domain"
+      },
+      {
+        "id": "domain:secure-example.net",
+        "label": "secure-example.net",
+        "type": "domain"
+      }
+    ],
+    "relationship_count": 4,
+    "relationships": [
+      {
+        "source": "email",
+        "target": "domain:secure-example.com",
+        "type": "SENDER_DOMAIN"
+      },
+      {
+        "source": "email",
+        "target": "domain:secure-example.net",
+        "type": "REPLY_TO_DOMAIN"
+      },
+      {
+        "source": "email",
+        "target": "domain:secure-example.com",
+        "type": "RETURN_PATH_DOMAIN"
+      },
+      {
+        "source": "domain:secure-example.com",
+        "target": "domain:secure-example.net",
+        "type": "DOMAIN_MISMATCH"
+      }
+    ]
+  },
+  "correlation_analysis": {
+    "findings": [
+      "Sender and Reply-To domains are different"
+    ],
+    "node_count": 3,
+    "nodes": [
+      {
+        "id": "email",
+        "label": "Email",
+        "type": "email"
+      },
+      {
+        "id": "domain:secure-example.com",
+        "label": "secure-example.com",
+        "type": "domain"
+      },
+      {
+        "id": "domain:secure-example.net",
+        "label": "secure-example.net",
+        "type": "domain"
+      }
+    ],
+    "relationship_count": 4,
+    "relationships": [
+      {
+        "source": "email",
+        "target": "domain:secure-example.com",
+        "type": "SENDER_DOMAIN"
+      },
+      {
+        "source": "email",
+        "target": "domain:secure-example.net",
+        "type": "REPLY_TO_DOMAIN"
+      },
+      {
+        "source": "email",
+        "target": "domain:secure-example.com",
+        "type": "RETURN_PATH_DOMAIN"
+      },
+      {
+        "source": "domain:secure-example.com",
+        "target": "domain:secure-example.net",
+        "type": "DOMAIN_MISMATCH"
+      }
+    ]
+  },
+  "custody_summary": {
+    "acquired_at": "2026-09-25T17:28:28.751206+00:00",
+    "analysis_completed_at": "2026-09-25T17:28:32.171360+00:00",
+    "analysis_started_at": "2026-09-25T17:28:28.751206+00:00",
+    "case_id": "CASE-20260925-26B19C3F",
+    "custody_continuity": "INTACT",
+    "event_count": 5,
+    "evidence_id": "TRX-20260925-1C5C3D4F",
+    "evidence_status": "ANALYSIS_COMPLETED",
+    "file_size": 1180,
+    "filename": "forensic_test.eml",
+    "integrity_status": "VERIFIED",
+    "preserved_at": "2026-09-25T17:28:28.751206+00:00",
+    "sha256": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231"
+  },
+  "domain_intelligence": {
+    "dkim": {
+      "present": false,
+      "record": null,
+      "selector": null,
+      "status": "SELECTOR_REQUIRED"
+    },
+    "dmarc": {
+      "policy": "NOT_FOUND",
+      "present": false,
+      "record": null,
+      "status": "NOT_FOUND"
+    },
+    "dns": {
+      "A": [
+        "38.6.118.133"
+      ],
+      "AAAA": [],
+      "MX": [],
+      "NS": [
+        "ns1.taoa.com.",
+        "ns2.taoa.com."
+      ],
+      "TXT": []
+    },
+    "domain": "secure-example.com",
+    "engine": {
+      "capabilities": [
+        "DNS A analysis",
+        "DNS AAAA analysis",
+        "DNS MX analysis",
+        "DNS TXT analysis",
+        "DNS NS analysis",
+        "SPF record analysis",
+        "DMARC policy analysis",
+        "DKIM selector lookup",
+        "RDAP registration intelligence"
+      ],
+      "name": "TARVEX26 Domain Intelligence Engine",
+      "note": "DNS records and RDAP data are environment-dependent and may be unavailable for some domains.",
+      "version": "1.0"
+    },
+    "findings": [
+      "No MX record found.",
+      "SPF record not found.",
+      "DMARC record not found."
+    ],
+    "infrastructure": {
+      "ipv4_count": 1,
+      "ipv6_count": 0,
+      "mx_count": 0,
+      "nameserver_count": 2
+    },
+    "rdap": {
+      "domain": "SECURE-EXAMPLE.COM",
+      "domain_status": [
+        "client transfer prohibited"
+      ],
+      "events": [
+        {
+          "eventAction": "registration",
+          "eventDate": "2026-07-27T05:35:28Z"
+        },
+        {
+          "eventAction": "expiration",
+          "eventDate": "2027-07-27T05:35:28Z"
+        },
+        {
+          "eventAction": "last changed",
+          "eventDate": "2026-07-27T05:35:30Z"
+        },
+        {
+          "eventAction": "last update of RDAP database",
+          "eventDate": "2026-09-25T17:28:20Z"
+        }
+      ],
+      "handle": "3125786787_DOMAIN_COM-VRSN",
+      "nameservers": [
+        "NS1.TAOA.COM",
+        "NS2.TAOA.COM"
+      ],
+      "registrar": "Dominet (HK) Limited",
+      "status": "FOUND"
+    },
+    "spf": {
+      "mechanisms": [],
+      "present": false,
+      "record": null,
+      "status": "NOT_FOUND"
+    },
+    "status": "ANALYZED"
+  },
+  "engines": {
+    "attachment_analysis": "ENABLED",
+    "chain_of_custody": "ENABLED",
+    "correlation_analysis": "ENABLED",
+    "domain_intelligence": "ENABLED",
+    "evidence_preservation": "ENABLED",
+    "geoip": "ENABLED",
+    "header_forensics": "ENABLED",
+    "infrastructure_graph": "ENABLED",
+    "ip_intelligence": "ENABLED",
+    "network_anonymization": "ENABLED",
+    "origin_intelligence": "ENABLED",
+    "threat_analysis": "ENABLED",
+    "url_intelligence": "ENABLED"
+  },
+  "evidence": {
+    "evidence_id": "TRX-20260925-DB6FCFD6",
+    "evidence_type": "EMAIL",
+    "file_size": 1180,
+    "filename": "forensic_test.eml",
+    "hash_algorithm": "SHA-256",
+    "preserved_at": "2026-09-25T17:28:28.751206+00:00",
+    "sha256": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231",
+    "status": "PRESERVED"
+  },
+  "extraction": {
+    "attachment_count": 1,
+    "domain_count": 2,
+    "ip_count": 0,
+    "received_count": 0,
+    "url_count": 1
+  },
+  "forensics": {
+    "authentication": [
+      "SPF = NOT PRESENT",
+      "DKIM = NOT PRESENT",
+      "DMARC = NOT PRESENT"
+    ],
+    "authentication_results": "mx.target-example.com; spf=fail smtp.mailfrom=secure-example.com; dkim=fail header.d=secure-example.com; dmarc=fail header.from=secure-example.com",
+    "date": "Mon, 21 Sep 2026 09:30:00 +0000",
+    "domains": [
+      "secure-example.com",
+      "secure-example.net"
+    ],
+    "from": "security@secure-example.com",
+    "ip_addresses": [],
+    "message_id": "<202609210930.12345@secure-example.com>",
+    "message_id_domain": "secure-example.com",
+    "received_count": 0,
+    "received_headers": [],
+    "relay_analysis": {
+      "domains": [],
+      "findings": [
+        "No Received headers were available for relay reconstruction."
+      ],
+      "ip_addresses": [],
+      "received_count": 0,
+      "received_headers": []
+    },
+    "reply_to": "verification@secure-example.net",
+    "reply_to_domain": "secure-example.net",
+    "return_path": "<security@secure-example.com>",
+    "return_path_domain": "secure-example.com",
+    "sender": "security@secure-example.com",
+    "sender_domain": "secure-example.com",
+    "subject": "URGENT: Account Security Verification Required",
+    "to": "victim@target-example.com"
+  },
+  "geoip_intelligence": {
+    "documentation_count": 0,
+    "engine": {
+      "capabilities": [
+        "IPv4 geolocation",
+        "IPv6 geolocation",
+        "Country identification",
+        "Region identification",
+        "City identification",
+        "Latitude/longitude",
+        "ISP identification",
+        "Organization identification",
+        "ASN identification",
+        "Timezone identification",
+        "Reverse DNS",
+        "6to4 detection",
+        "Private IP detection",
+        "Documentation IP detection",
+        "VPN indicator detection",
+        "Proxy indicator detection",
+        "Tor indicator detection",
+        "Hosting indicator detection",
+        "False attribution prevention"
+      ],
+      "name": "TARVEX26 GeoIP Intelligence Engine",
+      "note": "Non-routable, private, reserved and documentation addresses are not assigned real-world geographic locations.",
+      "provider": "ipwho.is",
+      "version": "3.0"
+    },
+    "findings": [
+      "No IP addresses were supplied."
+    ],
+    "private_count": 0,
+    "public_count": 0,
+    "results": [],
+    "status": "NO_IPS",
+    "suspicious_count": 0,
+    "total": 0
+  },
+  "header_analysis": {
+    "authentication": {
+      "dkim": "NOT PRESENT",
+      "dmarc": "NOT PRESENT",
+      "spf": "NOT PRESENT"
+    },
+    "authentication_results": [
+      "SPF = NOT PRESENT",
+      "DKIM = NOT PRESENT",
+      "DMARC = NOT PRESENT"
+    ],
+    "dkim": "NOT PRESENT",
+    "dmarc": "NOT PRESENT",
+    "domains": [
+      "secure-example.com",
+      "target-example.com",
+      "secure-example.net",
+      "mx.target-example.com",
+      "smtp.mailfrom",
+      "header.from"
+    ],
+    "engine": {
+      "capabilities": [
+        "Email header parsing",
+        "Received header analysis",
+        "IPv4 extraction",
+        "Domain extraction",
+        "Sender analysis",
+        "Reply-To analysis",
+        "Return-Path analysis",
+        "Message-ID analysis",
+        "SPF result parsing",
+        "DKIM result parsing",
+        "DMARC result parsing",
+        "Relay path analysis",
+        "Header anomaly detection"
+      ],
+      "name": "TARVEX26 Header Forensics Engine",
+      "version": "2.0"
+    },
+    "findings": [
+      "No Received headers found.",
+      "No valid IP addresses extracted from analyzed headers."
+    ],
+    "from": "",
+    "header_summary": {
+      "from": "",
+      "message_id": "",
+      "message_id_domain": null,
+      "reply_to": "",
+      "reply_to_domain": null,
+      "return_path": "",
+      "return_path_domain": null,
+      "sender_domain": null
+    },
+    "ip_addresses": [],
+    "message_id": "",
+    "message_id_domain": null,
+    "received_count": 0,
+    "received_headers": [],
+    "relay_analysis": {
+      "domains": [],
+      "ip_addresses": [],
+      "received_count": 0,
+      "relay_sequence": [],
+      "status": "NO_RECEIVED_HEADERS"
+    },
+    "reply_to": "",
+    "reply_to_domain": null,
+    "return_path": "",
+    "return_path_domain": null,
+    "sender_domain": null,
+    "spf": "NOT PRESENT",
+    "status": "ANALYZED"
+  },
+  "headers": {
+    "arc_authentication_results": "",
+    "arc_message_signature": "",
+    "arc_seal": "",
+    "authentication_results": "mx.target-example.com; spf=fail smtp.mailfrom=secure-example.com; dkim=fail header.d=secure-example.com; dmarc=fail header.from=secure-example.com",
+    "cc": "",
+    "date": "Mon, 21 Sep 2026 09:30:00 +0000",
+    "dkim_signature": "",
+    "from": "security@secure-example.com",
+    "message_id": "<202609210930.12345@secure-example.com>",
+    "received": [],
+    "received_spf": "",
+    "reply_to": "verification@secure-example.net",
+    "return_path": "<security@secure-example.com>",
+    "sender": "",
+    "subject": "URGENT: Account Security Verification Required",
+    "to": "victim@target-example.com",
+    "x_forwarded_for": "",
+    "x_originating_ip": ""
+  },
+  "infrastructure_graph": {
+    "node_count": 3,
+    "nodes": [
+      {
+        "id": "email",
+        "label": "Email",
+        "type": "email"
+      },
+      {
+        "id": "domain:secure-example.com",
+        "label": "secure-example.com",
+        "type": "domain"
+      },
+      {
+        "id": "domain:secure-example.net",
+        "label": "secure-example.net",
+        "type": "domain"
+      }
+    ],
+    "relationship_count": 2,
+    "relationships": [
+      {
+        "source": "email",
+        "target": "domain:secure-example.com",
+        "type": "SENDER_DOMAIN"
+      },
+      {
+        "source": "email",
+        "target": "domain:secure-example.net",
+        "type": "REPLY_TO_DOMAIN"
+      }
+    ]
+  },
+  "integrity_verification": {
+    "current_hash": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231",
+    "match": true,
+    "message": "Evidence integrity verified. SHA-256 hashes match.",
+    "original_hash": "7633c66692ef873f3e4eaaae1ab3ba6691f7fa2a37f7032888bdddbc3a1c5231",
+    "status": "VERIFIED"
+  },
+  "ip_intelligence": {
+    "documentation_count": 0,
+    "engine": {
+      "name": "TARVEX26 IP Intelligence Engine",
+      "reputation_source": "Not configured",
+      "version": "1.0"
+    },
+    "findings": [
+      "No IP addresses were extracted from the email."
+    ],
+    "private_count": 0,
+    "public_count": 0,
+    "results": [],
+    "status": "NO_IPS",
+    "suspicious_count": 0,
+    "total": 0
+  },
+  "network_anonymization": {
+    "analyzed_at": "2026-09-25T17:28:28.751206+00:00",
+    "cloud_count": 0,
+    "engine": {
+      "capabilities": [
+        "TOR exit-node detection",
+        "VPN infrastructure indicators",
+        "Proxy infrastructure indicators",
+        "Cloud infrastructure detection",
+        "Hosting/datacenter detection",
+        "Reverse DNS correlation",
+        "ISP correlation",
+        "ASN correlation"
+      ],
+      "name": "TARVEX26 Network Anonymization Intelligence",
+      "note": "Network indicators provide forensic evidence and should not be treated as definitive proof of user identity.",
+      "version": "1.0"
+    },
+    "findings": [],
+    "hosting_count": 0,
+    "proxy_count": 0,
+    "results": [],
+    "status": "NO_IPS",
+    "tor_count": 0,
+    "total_ips": 0,
+    "vpn_count": 0
+  },
+  "origin_intelligence": {
+    "engine": {
+      "capabilities": [
+        "Public IP identification",
+        "IP classification",
+        "Geolocation",
+        "Country identification",
+        "Region identification",
+        "City identification",
+        "ISP identification",
+        "Organization identification",
+        "ASN identification",
+        "Reverse DNS",
+        "Hosting/cloud detection",
+        "Candidate origin assessment",
+        "Origin confidence scoring"
+      ],
+      "name": "TARVEX26 Origin Intelligence Engine",
+      "version": "2.0"
+    },
+    "findings": [
+      "No reliable public origin IP was identified."
+    ],
+    "origin": {
+      "asn": null,
+      "assessment": "UNKNOWN",
+      "city": null,
+      "confidence": 0,
+      "country": null,
+      "country_code": null,
+      "hostname": null,
+      "ip": null,
+      "isp": null,
+      "latitude": null,
+      "longitude": null,
+      "organization": null,
+      "region": null
+    },
+    "public_ip_count": 0,
+    "public_ips": [],
+    "results": [
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "from",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "to",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "cc",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "subject",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "date",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "return_path",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "reply_to",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "message_id",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "sender",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "received",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "authentication_results",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "received_spf",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "dkim_signature",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "arc_authentication_results",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "arc_seal",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "arc_message_signature",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "x_originating_ip",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      },
+      {
+        "confidence": 100,
+        "findings": [
+          "Invalid IP cannot provide public internet geolocation"
+        ],
+        "ip": "x_forwarded_for",
+        "ip_type": "Invalid IP",
+        "reason": "Private or non-routable IP address",
+        "status": "unavailable"
+      }
+    ],
+    "total_ips": 18
+  },
+  "platform": "TARVEX26",
+  "problem_statement": "SIH26106",
+  "project": "AI-Powered Email Threat Detection, GeoLocation and Forensic Intelligence Platform",
+  "relay_analysis": {
+    "domains": [],
+    "findings": [
+      "No Received headers were available for relay reconstruction."
+    ],
+    "ip_addresses": [],
+    "received_count": 0,
+    "received_headers": []
+  },
+  "status": "ANALYZED",
+  "threat_analysis": {
+    "attachment_intelligence": {
+      "attachments": [
+        {
+          "content_type": "application/octet-stream",
+          "filename": "invoice.pdf.exe"
+        }
+      ],
+      "suspicious": [
+        "Potentially risky attachment: invoice.pdf.exe"
+      ]
+    },
+    "bec_risk": "MEDIUM",
+    "category_scores": {
+      "bec_fraud": 41,
+      "impersonation": 32,
+      "phishing": 100,
+      "social_engineering": 94
+    },
+    "classification": "PHISHING",
+    "confidence": 97.0,
+    "engine": {
+      "analysis_type": "NLP + rule-based forensic correlation",
+      "explainable": true,
+      "model_status": "NLP feature extraction active; supervised ML model will be added in the next training stage",
+      "name": "TARVEX26 Hybrid Threat Intelligence Engine",
+      "version": "1.0"
+    },
+    "feature_analysis": {
+      "attachment_count": 1,
+      "authentication_failures": [
+        "SPF",
+        "DKIM",
+        "DMARC"
+      ],
+      "bec_patterns": 2,
+      "credential_targeting": 5,
+      "financial_language": 0,
+      "impersonation_patterns": 0,
+      "reply_to_mismatch": true,
+      "social_engineering_patterns": 2,
+      "suspicious_attachment_count": 1,
+      "suspicious_url_count": 1,
+      "urgency_language": 5,
+      "url_count": 1
+    },
+    "fraud_score": 85,
+    "header_intelligence": {
+      "authentication_failures": [
+        "SPF",
+        "DKIM",
+        "DMARC"
+      ],
+      "reply_to": "verification@secure-example.net",
+      "reply_to_domain": "secure-example.net",
+      "reply_to_mismatch": true,
+      "sender": "security@secure-example.com",
+      "sender_domain": "secure-example.com"
+    },
+    "indicators": [
+      "Urgency and pressure language detected",
+      "Credential or account verification language detected",
+      "Business Email Compromise patterns detected",
+      "Social engineering language detected",
+      "1 suspicious URL(s) detected",
+      "Potentially risky attachment: invoice.pdf.exe",
+      "Sender and Reply-To domains do not match",
+      "Authentication failure detected: SPF, DKIM, DMARC"
+    ],
+    "nlp_analysis": {
+      "bec_hits": 2,
+      "body_length": 342,
+      "credential_hits": 5,
+      "financial_hits": 0,
+      "impersonation_hits": 0,
+      "social_engineering_hits": 2,
+      "subject": "URGENT: Account Security Verification Required",
+      "urgency_hits": 5,
+      "word_count": 49
+    },
+    "phishing_risk": "HIGH",
+    "risk_level": "CRITICAL",
+    "score": 85,
+    "score_breakdown": {
+      "content_score": 96,
+      "header_score": 65,
+      "threat_score": 85
+    },
+    "spoofing_risk": "HIGH",
+    "summary": "The email shows multiple indicators consistent with phishing, including credential targeting, suspicious links or social-engineering techniques.",
+    "threat_score": 85,
+    "url_intelligence": {
+      "findings": [
+        "Suspicious domain keyword detected: verify, secure",
+        "Sensitive action path detected: /login"
+      ],
+      "suspicious_urls": [
+        "http://verify-secure-example.com/login"
+      ],
+      "urls": [
+        "http://verify-secure-example.com/login"
+      ]
+    }
+  },
+  "threat_intelligence": {
+    "analyzed_at": "2026-09-25T17:28:32.171360+00:00",
+    "confidence": "LOW",
+    "counts": {
+      "malicious": 0,
+      "no_indicators": 0,
+      "suspicious": 0,
+      "total": 1,
+      "unavailable": 0,
+      "unknown": 1
+    },
+    "domain_intelligence": [
+      {
+        "analyzed_at": "2026-09-25T17:28:32.171360+00:00",
+        "confidence": "LOW",
+        "dmarc": {
+          "policy": "NOT_FOUND",
+          "present": false,
+          "record": null,
+          "status": "NOT_FOUND"
+        },
+        "dns": {
+          "A": [
+            "38.6.118.133"
+          ],
+          "AAAA": [],
+          "MX": [],
+          "NS": [
+            "ns1.taoa.com.",
+            "ns2.taoa.com."
+          ],
+          "TXT": []
+        },
+        "indicator": "secure-example.com",
+        "indicator_type": "DOMAIN",
+        "indicators": [
+          "No authoritative malicious-domain verdict is available.",
+          "No MX record was observed."
+        ],
+        "mx": null,
+        "registration": {},
+        "source": "TARVEX26 Domain Intelligence",
+        "spf": {
+          "mechanisms": [],
+          "present": false,
+          "record": null,
+          "status": "NOT_FOUND"
+        },
+        "verdict": "UNKNOWN"
+      }
+    ],
+    "engine": {
+      "analysis_type": "Explainable IOC correlation",
+      "capabilities": [
+        "IP reputation normalization",
+        "Domain intelligence correlation",
+        "URL risk correlation",
+        "VPN/Tor/Proxy indicator correlation",
+        "Hosting infrastructure detection",
+        "Explainable verdicts",
+        "Unknown-state handling",
+        "Evidence-preserving analysis"
+      ],
+      "important_note": "Unavailable or unknown reputation data is not treated as malicious.",
+      "name": "TARVEX26 Threat Intelligence Engine",
+      "version": "1.0"
+    },
+    "findings": [
+      "1 indicator(s) have no authoritative reputation verdict."
+    ],
+    "indicators": [
+      {
+        "analyzed_at": "2026-09-25T17:28:32.171360+00:00",
+        "confidence": "LOW",
+        "dmarc": {
+          "policy": "NOT_FOUND",
+          "present": false,
+          "record": null,
+          "status": "NOT_FOUND"
+        },
+        "dns": {
+          "A": [
+            "38.6.118.133"
+          ],
+          "AAAA": [],
+          "MX": [],
+          "NS": [
+            "ns1.taoa.com.",
+            "ns2.taoa.com."
+          ],
+          "TXT": []
+        },
+        "indicator": "secure-example.com",
+        "indicator_type": "DOMAIN",
+        "indicators": [
+          "No authoritative malicious-domain verdict is available.",
+          "No MX record was observed."
+        ],
+        "mx": null,
+        "registration": {},
+        "source": "TARVEX26 Domain Intelligence",
+        "spf": {
+          "mechanisms": [],
+          "present": false,
+          "record": null,
+          "status": "NOT_FOUND"
+        },
+        "verdict": "UNKNOWN"
+      }
+    ],
+    "ip_intelligence": [],
+    "overall_status": "UNKNOWN",
+    "url_intelligence": []
+  },
+  "threat_score": 85.0,
+  "timestamp": "2026-09-25T17:28:32.171360+00:00",
+  "url_analysis": {
+    "engine": {
+      "analysis_type": "URL heuristic and structural analysis",
+      "capabilities": [
+        "URL extraction",
+        "Scheme analysis",
+        "Credential-path detection",
+        "Suspicious domain pattern detection",
+        "Raw IP destination detection",
+        "Obfuscation detection",
+        "Redirect detection",
+        "URL shortener detection",
+        "Risk classification"
+      ],
+      "name": "TARVEX26 URL Intelligence Engine",
+      "version": "1.0"
+    },
+    "findings": [
+      "http://verify-secure-example.com/login: URL uses unencrypted HTTP",
+      "http://verify-secure-example.com/login: Credential/account-oriented URL path: login",
+      "http://verify-secure-example.com/login: Suspicious domain keyword pattern: secure, verify"
+    ],
+    "risk_level": "MEDIUM",
+    "suspicious_count": 1,
+    "suspicious_urls": [
+      "http://verify-secure-example.com/login"
+    ],
+    "total": 1,
+    "urls": [
+      {
+        "findings": [
+          "URL uses unencrypted HTTP",
+          "Credential/account-oriented URL path: login",
+          "Suspicious domain keyword pattern: secure, verify"
+        ],
+        "hostname": "verify-secure-example.com",
+        "is_ip_destination": false,
+        "is_url_shortener": false,
+        "path": "/login",
+        "query": "",
+        "risk_level": "MEDIUM",
+        "risk_score": 3,
+        "scheme": "http",
+        "suspicious": true,
+        "url": "http://verify-secure-example.com/login"
+      }
+    ]
+  },
+  "url_intelligence": {
+    "engine": {
+      "analysis_type": "URL heuristic and structural analysis",
+      "capabilities": [
+        "URL extraction",
+        "Scheme analysis",
+        "Credential-path detection",
+        "Suspicious domain pattern detection",
+        "Raw IP destination detection",
+        "Obfuscation detection",
+        "Redirect detection",
+        "URL shortener detection",
+        "Risk classification"
+      ],
+      "name": "TARVEX26 URL Intelligence Engine",
+      "version": "1.0"
+    },
+    "findings": [
+      "http://verify-secure-example.com/login: URL uses unencrypted HTTP",
+      "http://verify-secure-example.com/login: Credential/account-oriented URL path: login",
+      "http://verify-secure-example.com/login: Suspicious domain keyword pattern: secure, verify"
+    ],
+    "risk_level": "MEDIUM",
+    "suspicious_count": 1,
+    "suspicious_urls": [
+      "http://verify-secure-example.com/login"
+    ],
+    "total": 1,
+    "urls": [
+      {
+        "findings": [
+          "URL uses unencrypted HTTP",
+          "Credential/account-oriented URL path: login",
+          "Suspicious domain keyword pattern: secure, verify"
+        ],
+        "hostname": "verify-secure-example.com",
+        "is_ip_destination": false,
+        "is_url_shortener": false,
+        "path": "/login",
+        "query": "",
+        "risk_level": "MEDIUM",
+        "risk_score": 3,
+        "scheme": "http",
+        "suspicious": true,
+        "url": "http://verify-secure-example.com/login"
+      }
+    ]
+  }
+}
