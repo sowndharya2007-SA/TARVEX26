@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 
 import "./App.css";
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 
 /* =========================================================
@@ -653,14 +655,10 @@ function App() {
     );
 
     try {
-
-      const response = await fetch(
-        "http://127.0.0.1:5000/analyze-email",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${API_BASE}/analyze-email`, {
+  method: "POST",
+  body: formData,
+});
 
       const data = await response.json();
 
@@ -2215,58 +2213,127 @@ function App() {
                   <Fingerprint size={24} />
 
                 </div>
+                {/* =====================================================
+    AUTHENTICATION STATUS
+===================================================== */}
+
+{(() => {
+  const rawHeaders = analysis?.headers || {};
+  const headerAnalysis = analysis?.header_analysis || {};
+
+  const authentication = headerAnalysis?.authentication || {};
+
+  const authSources = [
+    rawHeaders?.authentication_results,
+    rawHeaders?.arc_authentication_results,
+    authentication?.raw,
+    forensic?.authentication_results,
+  ];
+
+  const authText = authSources
+    .flatMap((value) => {
+      if (Array.isArray(value)) return value;
+      if (value) return [value];
+      return [];
+    })
+    .join(" ");
+
+  const extractAuthStatus = (name) => {
+    const regex = new RegExp(
+      `\\b${name}\\s*=\\s*(pass|fail|softfail|neutral|none|temperror|permerror|bestguesspass)\\b`,
+      "i"
+    );
+
+    const match = authText.match(regex);
+
+    return match
+      ? match[1].toUpperCase()
+      : null;
+  };
+  const getStatus = (name, forensicValue) => {
+  const value = String(forensicValue || "").toUpperCase();
+
+  if (
+    value === "PASS" ||
+    value === "FAIL" ||
+    value === "SOFTFAIL" ||
+    value === "NEUTRAL" ||
+    value === "NONE" ||
+    value === "TEMPERROR" ||
+    value === "PERMERROR" ||
+    value === "BESTGUESSPASS"
+  ) {
+    return value;
+  }
+
+  // SPF can also appear in a Received-SPF header
+  if (name === "spf") {
+    const receivedSpf = String(
+      rawHeaders?.received_spf || ""
+    );
+
+    const match = receivedSpf.match(
+      /\b(pass|fail|softfail|neutral|none|temperror|permerror)\b/i
+    );
+
+    if (match) {
+      return match[1].toUpperCase();
+    }
+  }
+
+  return extractAuthStatus(name) || "NOT PRESENT";
+};
 
 
-                {/* AUTHENTICATION */}
+  const spfStatus = getStatus(
+    "spf",
+    forensic?.spf || authentication?.spf
+  );
 
-                <div className="forensics-grid">
+  const dkimStatus = getStatus(
+    "dkim",
+    forensic?.dkim || authentication?.dkim
+  );
 
-                  <ForensicBox
-                    label="SPF"
-                    value={
-                      forensic?.spf ||
-                      "Not available"
-                    }
-                    icon={
-                      <ShieldCheck size={18} />
-                    }
-                  />
+  const dmarcStatus = getStatus(
+    "dmarc",
+    forensic?.dmarc || authentication?.dmarc
+  );
 
-                  <ForensicBox
-                    label="DKIM"
-                    value={
-                      forensic?.dkim ||
-                      "Not available"
-                    }
-                    icon={
-                      <ShieldCheck size={18} />
-                    }
-                  />
+  return (
+    <div className="forensics-grid">
 
-                  <ForensicBox
-                    label="DMARC"
-                    value={
-                      forensic?.dmarc ||
-                      "Not available"
-                    }
-                    icon={
-                      <ShieldCheck size={18} />
-                    }
-                  />
+      <ForensicBox
+        label="SPF"
+        value={spfStatus}
+        icon={<ShieldCheck size={18} />}
+      />
 
-                  <ForensicBox
-                    label="MESSAGE ID"
-                    value={
-                      forensic?.message_id ||
-                      "Not available"
-                    }
-                    icon={
-                      <Fingerprint size={18} />
-                    }
-                  />
+      <ForensicBox
+        label="DKIM"
+        value={dkimStatus}
+        icon={<ShieldCheck size={18} />}
+      />
 
-                </div>
+      <ForensicBox
+        label="DMARC"
+        value={dmarcStatus}
+        icon={<ShieldCheck size={18} />}
+      />
 
+      <ForensicBox
+        label="MESSAGE ID"
+        value={
+          forensic?.message_id ||
+          rawHeaders?.message_id ||
+          "Not available"
+        }
+        icon={<Fingerprint size={18} />}
+      />
+
+    </div>
+  );
+})()}
 
                 {/* IP ADDRESSES */}
 
