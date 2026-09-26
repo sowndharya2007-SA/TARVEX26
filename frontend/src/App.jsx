@@ -4,6 +4,7 @@ import InfrastructureGraph from "./InfrastructureGraph";
 import ThreatIntelligencePanel from "./ThreatIntelligencePanel";
 import GeoLocationMap from "./GeoLocationMap";
 import Dashboard from "./Dashboard";
+import CyberBackground from "./CyberBackground";
 
 import {
   ShieldCheck,
@@ -993,6 +994,7 @@ function App() {
       <div className="glow glow-one"></div>
 
       <div className="glow glow-two"></div>
+      <CyberBackground />
 
 
       {/* =================================================

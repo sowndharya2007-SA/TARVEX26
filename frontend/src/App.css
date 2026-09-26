@@ -7892,3 +7892,39 @@ code {
     grid-column: 1 / -1;
   }
 }
+/* =========================================================
+   TARVEX26 FULL PAGE CYBER BACKGROUND
+   ========================================================= */
+
+.tarvex-cyber-background {
+  position: fixed;
+  inset: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  z-index: 0;
+
+  pointer-events: none;
+
+  background: transparent;
+}
+
+/*
+   Keep the actual application above the animation.
+*/
+
+.app {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+/*
+   All normal TARVEX26 content stays above the canvas.
+*/
+
+.app > *:not(.tarvex-cyber-background) {
+  position: relative;
+  z-index: 1;
+}
